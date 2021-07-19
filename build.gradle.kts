@@ -12,6 +12,16 @@ java {
     }
 }
 
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath("net.md-5:SpecialSource:1.10.0")
+    }
+}
+
 allprojects {
     repositories {
         mavenCentral()
@@ -36,11 +46,18 @@ subprojects {
     }
 }
 
+project(":${rootProject.name}-core") {
+    configurations {
+        create("mojangMapping")
+        create("spigotMapping")
+    }
+}
+
 tasks {
     val mavenLocal = File("${System.getProperty("user.home")}/.m2/repository/")
-    val mcVersions =
-        requireNotNull(project.properties["mc_versions"]) { "Not found properties in mc_versions" } as String
-    val mcVersionList = mcVersions.split(',').toSortedSet(reverseOrder())
+    val nmsVersions = File(rootDir, "${rootProject.name}/${rootProject.name}-core").listFiles { file ->
+        file.isDirectory && file.name.startsWith("v")
+    }?.map { it.name.removePrefix("v") } ?: emptyList()
 
     val buildToolsDir = File(rootDir, ".buildtools")
     val buildToolsJar = File(buildToolsDir, "BuildTools.jar")
@@ -57,7 +74,7 @@ tasks {
     val spigotRepoVersions = spigotRepo.listFiles(FileFilter { it.isDirectory }) ?: emptyArray()
     val spigotTasks = arrayListOf<TaskProvider<JavaExec>>()
 
-    mcVersionList.forEach { version ->
+    nmsVersions.forEach { version ->
         val mustRunAfters = spigotTasks.toList()
         spigotTasks.add(register<JavaExec>("spigot-$version") {
             onlyIf {
@@ -91,7 +108,7 @@ tasks {
     )
     val paperTasks = arrayListOf<TaskProvider<DefaultTask>>()
 
-    mcVersionList.forEach { version ->
+    nmsVersions.forEach { version ->
         val mustRunAfters = paperTasks.toList()
         paperTasks.add(register<DefaultTask>("paper-$version") {
             val paperGitInfo = paperGitInfos[version] ?: error("Not found paper commit for $version")
@@ -138,6 +155,10 @@ tasks {
         mustRunAfter(setupSpigot)
         dependsOn(paperTasks)
     }
+    val setupDependencies = register<DefaultTask>("setupDependencies") {
+        dependsOn(setupSpigot)
+        dependsOn(setupPaper)
+    }
     val setupModules = register<DefaultTask>("setupModules") {
         doLast {
             val defaultPrefix = "test"
@@ -157,10 +178,8 @@ tasks {
             }
         }
     }
-
     register<DefaultTask>("setupWorkspace") {
-        dependsOn(setupSpigot)
-        dependsOn(setupPaper)
+        dependsOn(setupDependencies)
         dependsOn(setupModules)
     }
 }
