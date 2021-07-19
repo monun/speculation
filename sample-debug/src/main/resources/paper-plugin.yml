@@ -1,0 +1,7 @@
+name: $pluginName
+version: $version
+main: $group.${rootProject.name}.plugin.${pluginName}Plugin
+libraries:
+  - org.jetbrains.kotlin:kotlin-stdlib:1.5.21
+  - org.jetbrains.kotlin:kotlin-reflect:1.5.21
+  - io.github.monun:sample:0.0.1
