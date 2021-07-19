@@ -1,4 +1,4 @@
-# Paper multi project
+# Paper multi project (1.17+)
 
 ---
 
