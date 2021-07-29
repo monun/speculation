@@ -161,7 +161,7 @@ tasks {
     }
     val setupModules = register<DefaultTask>("setupModules") {
         doLast {
-            val defaultPrefix = "test"
+            val defaultPrefix = "sample"
             val projectPrefix = rootProject.name
 
             if (defaultPrefix != projectPrefix) {
