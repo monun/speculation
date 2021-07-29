@@ -55,7 +55,7 @@ project(":${rootProject.name}-core") {
 
 tasks {
     val mavenLocal = File("${System.getProperty("user.home")}/.m2/repository/")
-    val nmsVersions = File(rootDir, "${rootProject.name}/${rootProject.name}-core").listFiles { file ->
+    val nmsVersions = File(rootDir, "${rootProject.name}-core").listFiles { file ->
         file.isDirectory && file.name.startsWith("v")
     }?.map { it.name.removePrefix("v") } ?: emptyList()
 

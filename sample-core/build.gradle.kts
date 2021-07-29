@@ -29,7 +29,6 @@ subprojects {
         mavenLocal()
     }
 
-
     dependencies {
         implementation(api)
         implementation(requireNotNull(parent)) // core
