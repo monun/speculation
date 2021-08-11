@@ -10,7 +10,9 @@ dependencies {
 }
 
 val pluginName = rootProject.name.split('-').joinToString("") { it.capitalize() }
+val packageName = rootProject.name.replace("-", "")
 extra.set("pluginName", pluginName)
+extra.set("packageName", packageName)
 
 tasks {
     processResources {
