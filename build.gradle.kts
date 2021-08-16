@@ -103,7 +103,7 @@ tasks {
     val paperRepo = File(mavenLocal, "io/papermc/paper/$paper")
     val paperRepoVersions = paperRepo.listFiles(FileFilter { it.isDirectory }) ?: emptyArray()
     val paperGitInfos = mapOf(
-        "1.17.1" to ("master" to "321dd1d655f988f7c7764fd8e6c4fc026c2e7a9e"),
+        "1.17.1" to ("master" to "6dfd1d9a7188e1571d30132b0e9fde87e60f0fbd"),
         "1.17" to ("master" to "a831634d446341efc70f027851effe02a0e7f1d3")
     )
     val paperTasks = arrayListOf<TaskProvider<DefaultTask>>()
