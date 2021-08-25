@@ -3,7 +3,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
 import java.io.FileFilter
 
 plugins {
-    kotlin("jvm") version "1.5.21"
+    kotlin("jvm") version "1.5.30"
 }
 
 java {
@@ -61,7 +61,6 @@ tasks {
 
     val buildToolsDir = File(rootDir, ".buildtools")
     val buildToolsJar = File(buildToolsDir, "BuildTools.jar")
-    val buildToolsMemory = project.properties["buildtoolsMemory"]?.toString() ?: "1G"
 
     val downloadBuildToolsTask = register<Download>("downloadBuildTools") {
         src("https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar")
@@ -93,7 +92,6 @@ tasks {
             mustRunAfter(mustRunAfters)
             workingDir(buildToolsDir)
             mainClass.set("-jar")
-            jvmArgs("-Xmx$buildToolsMemory")
             args(buildToolsJar.name, "--rev", version, "--remapped")
         })
     }
@@ -103,7 +101,7 @@ tasks {
     val paperRepo = File(mavenLocal, "io/papermc/paper/$paper")
     val paperRepoVersions = paperRepo.listFiles(FileFilter { it.isDirectory }) ?: emptyArray()
     val paperGitInfos = mapOf(
-        "1.17.1" to ("master" to "6dfd1d9a7188e1571d30132b0e9fde87e60f0fbd"),
+        "1.17.1" to ("master" to "789bc792804e74590a4243269df0eba94c166953"),
         "1.17" to ("master" to "a831634d446341efc70f027851effe02a0e7f1d3")
     )
     val paperTasks = arrayListOf<TaskProvider<DefaultTask>>()
