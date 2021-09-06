@@ -59,6 +59,12 @@ subprojects {
         testImplementation("org.junit.jupiter:junit-jupiter-engine:5.7.2")
         testImplementation("org.mockito:mockito-core:3.6.28")
     }
+
+    tasks {
+        test {
+            useJUnitPlatform()
+        }
+    }
 }
 
 project(":${rootProject.name}-core") {
