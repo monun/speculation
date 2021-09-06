@@ -1,9 +1,8 @@
-import de.undercouch.gradle.tasks.download.Download
-import org.apache.tools.ant.taskdefs.condition.Os
-import java.io.FileFilter
+import io.github.monun.paperstrap.paperstrap
 
 plugins {
-    kotlin("jvm") version "1.5.30"
+    kotlin("jvm") version "1.5.21"
+    id("io.github.monun.paperstrap") //buildSrc
 }
 
 java {
@@ -53,121 +52,25 @@ project(":${rootProject.name}-core") {
     }
 }
 
-tasks {
-    val mavenLocal = File("${System.getProperty("user.home")}/.m2/repository/")
-    val nmsVersions = File(rootDir, "${rootProject.name}-core").listFiles { file ->
+paperstrap {
+    File(rootDir, "${rootProject.name}-core").listFiles { file ->
         file.isDirectory && file.name.startsWith("v")
-    }?.map { it.name.removePrefix("v") } ?: emptyList()
-
-    val buildToolsDir = File(rootDir, ".buildtools")
-    val buildToolsJar = File(buildToolsDir, "BuildTools.jar")
-
-    val downloadBuildToolsTask = register<Download>("downloadBuildTools") {
-        src("https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar")
-        dest(buildToolsJar)
-        onlyIfModified(true)
+    }?.map { it.name.removePrefix("v") }?.forEach { version ->
+        include(version)
     }
+}
 
-    val spigot = "spigot"
-    val spigotRepo = File(mavenLocal, "org/spigotmc/spigot/")
-    val spigotRepoVersions = spigotRepo.listFiles(FileFilter { it.isDirectory }) ?: emptyArray()
-    val spigotTasks = arrayListOf<TaskProvider<JavaExec>>()
-
-    nmsVersions.forEach { version ->
-        val mustRunAfters = spigotTasks.toList()
-        spigotTasks.add(register<JavaExec>("spigot-$version") {
-            onlyIf {
-                spigotRepoVersions.find { it.name.startsWith("$version-") }?.let { repo ->
-                    val artifactName = "$spigot-${repo.name}"
-                    val jar = File(repo, "$artifactName.jar")
-                    val pom = File(repo, "$artifactName.pom")
-                    val mojang = File(repo, "$artifactName-remapped-mojang.jar")
-                    val obf = File(repo, "$artifactName-remapped-obf.jar")
-                    return@onlyIf !(jar.exists() && pom.exists() && mojang.exists() && obf.exists())
-                }
-                true
-            }
-
-            dependsOn(downloadBuildToolsTask)
-            mustRunAfter(mustRunAfters)
-            workingDir(buildToolsDir)
-            mainClass.set("-jar")
-            args(buildToolsJar.name, "--rev", version, "--remapped")
-        })
-    }
-
-    val paperDir = File(rootDir, ".paper")
-    val paper = "paper"
-    val paperRepo = File(mavenLocal, "io/papermc/paper/$paper")
-    val paperRepoVersions = paperRepo.listFiles(FileFilter { it.isDirectory }) ?: emptyArray()
-    val paperGitInfos = mapOf(
-        "1.17.1" to ("master" to "789bc792804e74590a4243269df0eba94c166953"),
-        "1.17" to ("master" to "a831634d446341efc70f027851effe02a0e7f1d3")
-    )
-    val paperTasks = arrayListOf<TaskProvider<DefaultTask>>()
-
-    nmsVersions.forEach { version ->
-        val mustRunAfters = paperTasks.toList()
-        paperTasks.add(register<DefaultTask>("paper-$version") {
-            val paperGitInfo = paperGitInfos[version] ?: error("Not found paper commit for $version")
-            onlyIf {
-                paperRepoVersions.find { it.name.startsWith("$version-") }?.let { repo ->
-                    val artifactName = "$paper-${repo.name}"
-                    val jar = File(repo, "$artifactName.jar")
-                    val pom = File(repo, "$artifactName.pom")
-                    val mojang = File(repo, "$artifactName-mojang-mapped.jar")
-                    return@onlyIf !(jar.exists() && pom.exists() && mojang.exists())
-                }
-                true
-            }
-
-            mustRunAfter(mustRunAfters)
-
-            doLast {
-                fun git(vararg args: String) = exec {
-                    workingDir(paperDir)
-                    commandLine("git")
-                    args(*args)
-                }
-
-                fun gradlew(vararg args: String) = exec {
-                    workingDir(paperDir)
-                    commandLine(if (Os.isFamily(Os.FAMILY_DOS)) "gradlew.bat" else "./gradlew")
-                    args(*args)
-                }
-
-                git("fetch", "--all")
-                git("checkout", paperGitInfo.first)
-                git("reset", "--hard", paperGitInfo.second)
-                gradlew("applyPatches")
-                gradlew("publishToMavenLocal")
-                gradlew("clean", "shadowJar")
-            }
-        })
-    }
-
-    val setupSpigot = register<DefaultTask>("setupSpigot") {
-        dependsOn(spigotTasks)
-    }
-    val setupPaper = register<DefaultTask>("setupPaper") {
-        mustRunAfter(setupSpigot)
-        dependsOn(paperTasks)
-    }
-    val setupDependencies = register<DefaultTask>("setupDependencies") {
-        dependsOn(setupSpigot)
-        dependsOn(setupPaper)
-    }
-    val setupModules = register<DefaultTask>("setupModules") {
+tasks {
+    register<DefaultTask>("setupModules") {
         doLast {
             val defaultPrefix = "sample"
             val projectPrefix = rootProject.name
 
             if (defaultPrefix != projectPrefix) {
                 fun rename(suffix: String) {
-                    val from ="$defaultPrefix-$suffix"
+                    val from = "$defaultPrefix-$suffix"
                     val to = "$projectPrefix-$suffix"
                     file(from).renameTo(file(to))
-                    println("$from -> $to")
                 }
 
                 rename("api")
@@ -175,9 +78,5 @@ tasks {
                 rename("debug")
             }
         }
-    }
-    register<DefaultTask>("setupWorkspace") {
-        dependsOn(setupDependencies)
-        dependsOn(setupModules)
     }
 }
