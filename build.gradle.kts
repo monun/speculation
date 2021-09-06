@@ -11,6 +11,14 @@ java {
     }
 }
 
+paperstrap {
+    File(rootDir, "${rootProject.name}-core").listFiles { file ->
+        file.isDirectory && file.name.startsWith("v")
+    }?.map { it.name.removePrefix("v") }?.forEach { version ->
+        include(version)
+    }
+}
+
 buildscript {
     repositories {
         mavenCentral()
@@ -24,6 +32,14 @@ buildscript {
 allprojects {
     repositories {
         mavenCentral()
+    }
+
+    tasks {
+        withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+            kotlinOptions {
+                jvmTarget = "16"
+            }
+        }
     }
 }
 
@@ -49,14 +65,6 @@ project(":${rootProject.name}-core") {
     configurations {
         create("mojangMapping")
         create("spigotMapping")
-    }
-}
-
-paperstrap {
-    File(rootDir, "${rootProject.name}-core").listFiles { file ->
-        file.isDirectory && file.name.startsWith("v")
-    }?.map { it.name.removePrefix("v") }?.forEach { version ->
-        include(version)
     }
 }
 
