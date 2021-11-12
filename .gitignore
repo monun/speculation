@@ -11,8 +11,4 @@ build/
 !gradle-wrapper.properties
 
 # Debug server folder
-.debug-mojang/
-.debug-paper/
-
-# Paper strap
-.paperstrap/
+.debug/

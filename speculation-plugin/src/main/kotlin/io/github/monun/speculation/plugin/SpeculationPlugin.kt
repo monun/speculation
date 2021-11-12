@@ -1,8 +1,8 @@
-package io.github.monun.sample.plugin
+package io.github.monun.speculation.plugin
 
 import org.bukkit.plugin.java.JavaPlugin
 
-class SamplePlugin: JavaPlugin() {
+class SpeculationPlugin: JavaPlugin() {
     override fun onEnable() {
         logger.info("HELLO WORLD!")
     }

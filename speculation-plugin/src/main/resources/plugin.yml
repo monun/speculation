@@ -5,4 +5,7 @@ api-version: 1.17
 libraries:
   - org.jetbrains.kotlin:kotlin-stdlib:1.5.21
   - org.jetbrains.kotlin:kotlin-reflect:1.5.21
-  - io.github.monun:sample:${version}
+  - org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0
+  - io.github.monun:tap:4.1.10
+  - io.github.monun:kommand:2.6.6
+  - io.github.monun:heartbeat-coroutines:0.0.1
