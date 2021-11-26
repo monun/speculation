@@ -1,4 +1,4 @@
 package io.github.monun.speculation.game.zone
 
-class ZoneFestival {
+class ZoneFestival: Zone() {
 }

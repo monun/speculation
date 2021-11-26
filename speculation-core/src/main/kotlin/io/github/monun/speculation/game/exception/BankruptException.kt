@@ -1,3 +1,5 @@
 package io.github.monun.speculation.game.exception
 
-class BankruptException: Exception()
+import io.github.monun.speculation.game.Piece
+
+class BankruptException(val piece: Piece): Exception()

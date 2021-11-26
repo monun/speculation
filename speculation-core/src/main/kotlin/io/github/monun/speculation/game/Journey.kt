@@ -8,17 +8,40 @@ class Journey(
     to: Zone,
     val movement: Movement,
     val cause: MovementCause,
-    val source: Piece? = null
+    val source: Piece
 ) {
+    lateinit var path: List<Zone>
+        private set
+
     private val _passed = arrayListOf<Zone>()
 
     val passed: List<Zone>
         get() = _passed.toList()
+
+    private var state = 0
+
+    internal suspend fun pathfinding() {
+        val path = arrayListOf<Zone>()
+        var zone = from.shift(movement)
+
+        while (zone != destination) {
+            if (!zone.navigate(this)) {
+                destination = zone
+                break
+            }
+            path += zone
+            zone = zone.shift(movement)
+        }
+        this.path = path.toList()
+    }
 
     internal fun pass(zone: Zone) {
         _passed += zone
     }
 
     var destination: Zone = to
-        internal set
+        private set(value) {
+            require(state == 0) { "Immutable journey state" }
+            field = value
+        }
 }
