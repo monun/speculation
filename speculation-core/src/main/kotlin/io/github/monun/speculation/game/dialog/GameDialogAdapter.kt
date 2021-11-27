@@ -1,8 +1,5 @@
 package io.github.monun.speculation.game.dialog
 
-import io.github.monun.speculation.game.Piece
-import io.github.monun.speculation.game.message.GameMessage
-
 class GameDialogAdapter {
     private val pipes = HashMap<Class<out GameDialog<*>>, suspend (GameDialog<*>) -> Any>()
 

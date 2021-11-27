@@ -15,7 +15,7 @@ import java.util.*
 import kotlin.random.Random
 
 class Game {
-    private val board: Board = Board(this)
+    val board: Board = Board(this)
 
     val dialogAdapter = GameDialogAdapter()
     val eventAdapter = GameEventAdapter()

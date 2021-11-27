@@ -1,12 +1,13 @@
 package io.github.monun.speculation.game.zone
 
+import io.github.monun.speculation.game.Attachable
 import io.github.monun.speculation.game.Journey
 import io.github.monun.speculation.game.Movement
 import io.github.monun.speculation.game.Piece
 import javax.print.attribute.standard.Destination
 import kotlin.math.abs
 
-abstract class Zone {
+abstract class Zone: Attachable() {
     lateinit var previous: Zone
     lateinit var next: Zone
 

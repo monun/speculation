@@ -8,8 +8,8 @@ dependencies {
     implementation(core)
     implementation("io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT")
     implementation("io.github.monun:heartbeat-coroutines:0.0.1")
-    implementation("io.github.monun:tap:4.1.10")
-    implementation("io.github.monun:kommand:2.6.6")
+    implementation("io.github.monun:tap-api:4.1.10")
+    implementation("io.github.monun:kommand-api:2.6.6")
 }
 
 val pluginName = rootProject.name.split('-').joinToString("") { it.capitalize() }

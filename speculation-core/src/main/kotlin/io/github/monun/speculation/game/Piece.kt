@@ -13,7 +13,7 @@ import io.github.monun.speculation.game.zone.ZoneProperty
 import io.github.monun.speculation.ref.upstream
 import kotlin.math.min
 
-class Piece(board: Board, val name: String, zone: Zone) {
+class Piece(board: Board, val name: String, zone: Zone): Attachable() {
     val board = upstream(board)
 
     var team: PieceTeam? = null

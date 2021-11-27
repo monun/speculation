@@ -45,6 +45,7 @@ class Board(game: Game) {
     )
 
     val zoneProperties: List<ZoneProperty> = zones.filterIsInstance<ZoneProperty>()
+    val zoneSpecials: List<Zone> = zones.filter { it !is ZoneProperty }
 
     private val _pieces = LinkedHashMap<String, Piece>()
 
@@ -62,7 +63,7 @@ class Board(game: Game) {
         }
     }
 
-    fun newTeam(name: String, members: List<Piece>): PieceTeam {
+    fun newTeam(name: String, members: Set<Piece>): PieceTeam {
         game.checkState(GameState.NEW)
         require(name !in _teams) { "Already registered team name '$name'" }
         require(members.all { it.team == null }) { "Already piece has team" }
