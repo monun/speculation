@@ -3,6 +3,7 @@ package io.github.monun.speculation.paper
 import io.github.monun.tap.fake.FakeEntity
 import net.kyori.adventure.bossbar.BossBar
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.title.Title
 import org.bukkit.Bukkit
 import org.bukkit.Location
@@ -45,7 +46,9 @@ class Dialog(val piece: PaperPiece) {
 
     fun timeout(message: Component, duration: Long, action: (Dialog) -> Unit) {
         if (isDisposed) return
-        this.timeout = Timeout(piece, message, duration, action)
+        this.timeout = Timeout(piece, message, duration, action).also {
+            it.showProgressBar(Bukkit.getOnlinePlayers())
+        }
     }
 
     fun interact(player: Player, start: Vector, direction: Vector, maxDistance: Double = 96.0) {
@@ -78,6 +81,7 @@ class Dialog(val piece: PaperPiece) {
 
         isDisposed = true
         buttons.onEach { it.dispose() }.clear()
+        timeout?.run { hideProgressBar() }
     }
 
     fun onUpdate() {
@@ -114,15 +118,16 @@ class Dialog(val piece: PaperPiece) {
     inner class Timeout(
         piece: PaperPiece,
         message: Component,
-        val duration: Long,
+        duration: Long,
         val action: (Dialog) -> Unit
     ) {
         fun currentTime() = System.nanoTime()
 
+        private val duration = duration * 1000000L
         private val time: Long = currentTime() + duration * 1000000L
 
         private val progressBar =
-            BossBar.bossBar(piece.name.append(message), 1.0F, piece.color.group.barColor, BossBar.Overlay.PROGRESS)
+            BossBar.bossBar(piece.name.append(Component.text(": ")).append(message.colorIfAbsent(NamedTextColor.WHITE)), 1.0F, piece.color.group.barColor, BossBar.Overlay.PROGRESS)
 
         fun showProgressBar(players: Collection<Player> = Bukkit.getOnlinePlayers()) {
             players.forEach { it.showBossBar(progressBar) }
@@ -137,12 +142,13 @@ class Dialog(val piece: PaperPiece) {
 
             return if (currentTime < time) {
                 val remaining = time - currentTime
-                val progress = (remaining.toDouble() / remaining.toDouble()).toFloat()
+                val progress = (remaining.toDouble() / duration.toDouble()).toFloat()
                 progressBar.progress(progress)
                 true
             } else {
                 // timeout
                 action(this@Dialog)
+                progressBar.progress(0.0F)
                 false
             }
         }

@@ -5,6 +5,7 @@ import io.github.monun.heartbeat.coroutines.Suspension
 import io.github.monun.speculation.game.Piece
 import io.github.monun.speculation.game.dialog.GameDialogDice
 import io.github.monun.speculation.game.message.GameMessage
+import io.github.monun.tap.math.toRadians
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
@@ -28,7 +29,7 @@ class GameDialogDispatcher {
         }
     }
 
-    private fun disposeCurrentDialog() {
+    fun disposeCurrentDialog() {
         currentDialog?.run {
             dispose()
             currentDialog = null
@@ -48,8 +49,9 @@ class GameDialogDispatcher {
             val paperPiece: PaperPiece = diceDialog.piece.attachment()
             val location =
                 paperPiece.player?.location?.apply { y += 2.5 } ?: PaperGameConfig.center.toLocation(process.world)
+            val numberOfDice = diceDialog.numberOfDice
             val dices = List(diceDialog.numberOfDice) {
-                Dice(process.fakeEntityServer, location)
+                process.spawnDice(location, paperPiece, Vector(2.0, 2.5, 0.0).rotateAroundY((360.0 / numberOfDice).toRadians() * it))
             }
 
             newDialog(diceDialog.piece) {
@@ -59,9 +61,15 @@ class GameDialogDispatcher {
                 button(PaperGameConfig.centerBox) { player, _, _ ->
                     val velocity = player.location.direction
                     dices.forEach { dice ->
-                        dice.roll(velocity.clone().add(Vector.getRandom().subtract(Vector(0.5, 0.5, 0.5)).normalize().multiply(0.5)))
+                        dice.roll(
+                            velocity.clone()
+                                .add(Vector.getRandom().subtract(Vector(0.5, 0.5, 0.5)).normalize().multiply(0.2))
+                        )
                     }
                     disposeCurrentDialog()
+                }
+                timeout(Component.text("주사위"), 15L * 1000L) {
+                    dices.filter { it.isBeforeRoll }.forEach { it.roll(Vector(0.0, 1.0, 0.0)) }
                 }
             }
 
@@ -71,22 +79,15 @@ class GameDialogDispatcher {
                 val player = paperPiece.player
 
                 if (player == null) {
-                    // 플레이어가 없을때 무작위 방향으로 모든 주사위를 굴림
-                    dices.filter { !it.isRolled }
-                        .forEach { it.roll(Vector.getRandom().subtract(Vector(0.5, 0.5, 0.5)).normalize()) }
-                } else {
-                    // 플레이어가 있을때 굴리지 않은 주사위를 플레이어 위로 이동
-                    val movedLocation = player.location.apply { y += 2.5 }
-                    dices.filter { !it.isRolled }.forEach { it.moveTo(movedLocation) }
+                    // 플레이어가 없을때 위로 모든 주사위를 굴림
+                    dices.filter { it.isBeforeRoll }.forEach { it.roll(Vector(0.0, 1.0, 0.0)) }
                 }
-
-                dices.forEach { it.onUpdate() }
-
                 // 모든 주사위가 완료되면 탈출
                 if (dices.all { it.isOnGround }) break
-
                 sus.delay(50L)
             }
+
+            dices.forEach { it.remove(60) }
 
             val title = Component.text()
             if (dices.count() > 0 && dices.all { it.value == dices.first().value } && diceDialog.message == GameMessage.ROLL_THE_DICE) {
@@ -104,7 +105,6 @@ class GameDialogDispatcher {
                 )
             )
             sus.delay(1000L)
-
             dices.map { it.value }
         }
     }

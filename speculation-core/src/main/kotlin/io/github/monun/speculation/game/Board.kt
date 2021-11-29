@@ -49,7 +49,15 @@ class Board(game: Game) {
         ZoneProperty(),
         ZoneNTS(),
         ZoneProperty()
-    )
+    ).also { list ->
+        val count = list.count()
+        list.forEachIndexed { index, zone ->
+            zone.apply {
+                previous = list[(count + index - 1) % count]
+                next = list[(count + index + 1) % count]
+            }
+        }
+    }
 
     val zoneProperties: List<ZoneProperty> = zones.filterIsInstance<ZoneProperty>()
     val zoneSpecials: List<Zone> = zones.filter { it !is ZoneProperty }

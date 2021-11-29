@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.*
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.ArmorStand
@@ -20,6 +21,7 @@ import org.bukkit.inventory.meta.LeatherArmorMeta
 import org.bukkit.inventory.meta.SkullMeta
 import org.bukkit.scheduler.BukkitTask
 import org.bukkit.util.BoundingBox
+import org.bukkit.util.Vector
 import java.util.*
 
 class PaperGameProcess(
@@ -41,6 +43,7 @@ class PaperGameProcess(
         private set
 
     lateinit var pieceByIds: Map<UUID, PaperPiece>
+    private lateinit var dices: MutableList<Dice>
 
     lateinit var dialogDispatcher: GameDialogDispatcher
     private lateinit var bukkitTask: BukkitTask
@@ -58,6 +61,7 @@ class PaperGameProcess(
         listener = PaperGameListener(this).also { plugin.server.pluginManager.registerEvents(it, plugin) }
         dialogDispatcher = GameDialogDispatcher().apply { register(this@PaperGameProcess) }
         bukkitTask = plugin.server.scheduler.runTaskTimer(plugin, ::onUpdate, 0L, 1L)
+        dices = arrayListOf()
 
         initializeZones()
         initializeZoneProperties()
@@ -91,7 +95,7 @@ class PaperGameProcess(
 
             var box = BoundingBox(
                 x.toDouble(), y, z.toDouble(),
-                (x + width).toDouble(), (y + 1.0), (z + width).toDouble()
+                (x + width).toDouble(), (y - 1.0), (z + width).toDouble()
             ).expandDirectional(
                 -innerFace.modX.toDouble(),
                 0.0,
@@ -172,7 +176,7 @@ class PaperGameProcess(
 
         properties.forEach { property ->
             property.apply {
-                val location = location.apply {
+                val slotLocation = location.apply {
                     val face = outerFace
                     add(face.modX * 1.5, 0.0, face.modZ * 1.5)
                 }
@@ -181,28 +185,29 @@ class PaperGameProcess(
                 fun Location.spawnSlot() = world.spawn(this, ItemFrame::class.java).apply {
                     invisible = true
                     rotation = rot
-                    setFacingDirection(BlockFace.DOWN)
+                    setFacingDirection(BlockFace.UP)
                 }
 
                 fun Location.spawnTag(text: Component) =
                     fakeEntityServer.spawnEntity(this, ArmorStand::class.java).apply {
                         updateMetadata<ArmorStand> {
-                            isInvisible = false
+                            isInvisible = true
                             isMarker = true
                             isCustomNameVisible = true
                             customName(text)
                         }
                     }
 
-                slotCenter = location.spawnSlot()
+                slotCenter = slotLocation.spawnSlot()
                 slotLeft =
-                    location.clone().add(reverseFace.modX.toDouble(), 0.0, reverseFace.modZ.toDouble()).spawnSlot()
+                    slotLocation.clone().add(reverseFace.modX.toDouble(), 0.0, reverseFace.modZ.toDouble()).spawnSlot()
                 slotRight =
-                    location.clone().add(forwardFace.modX.toDouble(), 0.0, forwardFace.modZ.toDouble()).spawnSlot()
+                    slotLocation.clone().add(forwardFace.modX.toDouble(), 0.0, forwardFace.modZ.toDouble()).spawnSlot()
 
-                location.add(innerFace.modX * 2.0, 2.0, innerFace.modZ * 2.0)
-                nameTag = location.spawnTag(Component.text(name).color(NamedTextColor.GOLD))
-                priceTag = location.apply { y -= 0.2 }.spawnTag(Component.text(0))
+                val tagLocation = this.location.add(innerFace.modX * 1.5, 1.25, innerFace.modZ * 1.5)
+                nameTag =
+                    tagLocation.spawnTag(Component.text(name).color(NamedTextColor.GOLD).decorate(TextDecoration.BOLD))
+                priceTag = tagLocation.apply { y -= 0.3 }.spawnTag(Component.text(0))
             }
         }
     }
@@ -317,21 +322,42 @@ class PaperGameProcess(
         // TODO
     }
 
+    fun spawnDice(location: Location, piece: PaperPiece, offset: Vector): Dice {
+        checkState()
+        return Dice(fakeEntityServer, location).apply {
+            owner = piece to offset
+        }.also {
+            dices += it
+        }
+    }
+
     fun piece(uniqueId: UUID) = pieceByIds[uniqueId]
 
     fun piece(player: Player) = piece(player.uniqueId)
 
     private fun onUpdate() {
         dialogDispatcher.currentDialog?.onUpdate()
+        dices.removeIf {
+            it.onUpdate()
+            !it.isValid
+        }
 
         fakeEntityServer.update()
     }
 
     fun unregister() {
+        checkState()
+
+        dialogDispatcher.disposeCurrentDialog()
         game.board.zones.map { it.attachment<PaperZone>() }.forEach { it.destroy() }
         fakeEntityServer.clear()
         HandlerList.unregisterAll(listener)
         bukkitTask.cancel()
         scope.cancel()
+        state = 3
+    }
+
+    private fun checkState() {
+        check(state != 3)
     }
 }
