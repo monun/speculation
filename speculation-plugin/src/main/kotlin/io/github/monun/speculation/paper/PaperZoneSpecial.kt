@@ -7,7 +7,6 @@ class PaperZoneSpecial(
     override val zone: Zone
 ) : PaperZone() {
     var modelId = -1
-    lateinit var author: String
 
     lateinit var slot: ItemFrame
 

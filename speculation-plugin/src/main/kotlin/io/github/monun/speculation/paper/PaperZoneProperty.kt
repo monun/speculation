@@ -20,7 +20,6 @@ class PaperZoneProperty(
     var landmarkModelId: Int = -1
     lateinit var landmarkName: String
     lateinit var festivalName: String
-    lateinit var author: String
 
     lateinit var nameTag: FakeEntity
     lateinit var tollsTag: FakeEntity

@@ -28,7 +28,7 @@ class PaperGameProcess(
     val plugin: SpeculationPlugin,
     val world: World
 ) {
-    val center: Location = PaperGameConfig.center.toLocation(world)
+    val centerLocation: Location = PaperGameConfig.center.toLocation(world)
         get() = field.clone()
 
     private var state = 0
@@ -220,6 +220,7 @@ class PaperGameProcess(
         fun PaperZoneSpecial.initResources(modelId: Int, name: String, author: String) {
             this.name = name
             this.author = author
+            this.modelId = modelId
         }
 
         specials[0].initResources(0, "출발지", "null")

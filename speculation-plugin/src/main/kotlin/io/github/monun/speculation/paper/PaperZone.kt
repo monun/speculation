@@ -22,6 +22,7 @@ abstract class PaperZone {
     lateinit var process: PaperGameProcess
     var isCorner = false
     lateinit var name: String
+    lateinit var author: String
     lateinit var box: BoundingBox
     lateinit var forwardFace: Face
     lateinit var reverseFace: Face
