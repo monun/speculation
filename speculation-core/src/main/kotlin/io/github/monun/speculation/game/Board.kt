@@ -11,33 +11,40 @@ class Board(game: Game) {
         ZoneProperty(),
         ZoneProperty(),
         ZoneProperty(),
+
         ZoneGamble(),
         ZoneProperty(),
         ZoneProperty(),
         ZoneProperty(),
 
+
         ZoneJail(),
         ZoneProperty(),
         ZoneProperty(),
         ZoneProperty(),
+
         ZoneEvent(),
         ZoneProperty(),
         ZoneProperty(),
         ZoneProperty(),
+
 
         ZoneFestival(),
         ZoneProperty(),
         ZoneProperty(),
         ZoneProperty(),
+
         ZoneEvent(),
         ZoneProperty(),
         ZoneProperty(),
         ZoneProperty(),
 
+
         ZonePortal(),
         ZoneProperty(),
         ZoneProperty(),
         ZoneProperty(),
+
         ZoneEvent(),
         ZoneProperty(),
         ZoneNTS(),

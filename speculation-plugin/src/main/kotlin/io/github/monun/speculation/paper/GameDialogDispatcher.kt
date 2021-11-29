@@ -59,7 +59,7 @@ class GameDialogDispatcher {
                 button(PaperGameConfig.centerBox) { player, _, _ ->
                     val velocity = player.location.direction
                     dices.forEach { dice ->
-                        dice.roll(velocity.clone().add(Vector.getRandom().normalize().multiply(0.2)))
+                        dice.roll(velocity.clone().add(Vector.getRandom().subtract(Vector(0.5, 0.5, 0.5)).normalize().multiply(0.5)))
                     }
                     disposeCurrentDialog()
                 }
@@ -79,6 +79,8 @@ class GameDialogDispatcher {
                     val movedLocation = player.location.apply { y += 2.5 }
                     dices.filter { !it.isRolled }.forEach { it.moveTo(movedLocation) }
                 }
+
+                dices.forEach { it.onUpdate() }
 
                 // 모든 주사위가 완료되면 탈출
                 if (dices.all { it.isOnGround }) break

@@ -49,11 +49,12 @@ class Game {
                 }
             }
         }.toList()
+        turnQueue = ArrayDeque()
 
         scope.launch(dispatcher) {
             try {
                 while (isActive) {
-                    if (turnQueue.isEmpty()) turnQueue.addAll(turns.filter { it.isBankrupt })
+                    if (turnQueue.isEmpty()) turnQueue.addAll(turns.filter { !it.isBankrupt })
 
                     val piece = turnQueue.remove()
                     currentTurn = piece

@@ -9,6 +9,9 @@ import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 
+// TODO 메인루틴 주사위까지 테스트
+// TODO 땅 구매 업데이트와 매각까지 구현
+
 class SpeculationPlugin : JavaPlugin() {
     var process: PaperGameProcess? = null
         private set
@@ -50,6 +53,10 @@ class SpeculationPlugin : JavaPlugin() {
                 }
             }
         }
+    }
+
+    override fun onDisable() {
+        runCatching { stopProcess() }
     }
 
     fun startProcess(world: World, players: Set<Player>, teamMatch: Boolean): PaperGameProcess {

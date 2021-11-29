@@ -17,6 +17,7 @@ import org.bukkit.entity.Player
 import org.bukkit.event.HandlerList
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.LeatherArmorMeta
+import org.bukkit.inventory.meta.SkullMeta
 import org.bukkit.scheduler.BukkitTask
 import org.bukkit.util.BoundingBox
 import java.util.*
@@ -30,13 +31,13 @@ class PaperGameProcess(
 
     private var state = 0
 
+    lateinit var game: Game
+        private set
+
     lateinit var fakeEntityServer: FakeEntityServer
         private set
 
     lateinit var scope: CoroutineScope
-        private set
-
-    lateinit var game: Game
         private set
 
     lateinit var pieceByIds: Map<UUID, PaperPiece>
@@ -49,13 +50,14 @@ class PaperGameProcess(
         check(state == 0) { "Invalid state $state" }
         state = 1
 
-        fakeEntityServer = FakeEntityServer.create(plugin)
+        game = Game()
+        fakeEntityServer = FakeEntityServer.create(plugin).apply {
+            Bukkit.getOnlinePlayers().forEach { addPlayer(it) }
+        }
         scope = HeartbeatScope()
         listener = PaperGameListener(this).also { plugin.server.pluginManager.registerEvents(it, plugin) }
         dialogDispatcher = GameDialogDispatcher().apply { register(this@PaperGameProcess) }
         bukkitTask = plugin.server.scheduler.runTaskTimer(plugin, ::onUpdate, 0L, 1L)
-
-        game = Game()
 
         initializeZones()
         initializeZoneProperties()
@@ -78,12 +80,12 @@ class PaperGameProcess(
         var z = 1
 
         zones.forEachIndexed { index, zone ->
-            val line = zones.count() / 7
-            val number = index % line
-            val forwardFace = faces[line]
-            val reverseFace = forwardFace.rotate(2)
-            val innerFace = forwardFace.rotate(1)
-            val outerFace = forwardFace.rotate(-1)
+            val line = index / 8
+            val number = index % 8
+            val innerFace = faces[line]
+            val outerFace = innerFace.rotate(2)
+            val forwardFace = innerFace.rotate(-1)
+            val reverseFace = innerFace.rotate(1)
 
             val width = 3
 
@@ -281,7 +283,12 @@ class PaperGameProcess(
                                 }
                             }
 
-                            helmet = ItemStack(Material.PLAYER_HEAD).apply { leatherMeta() }
+                            helmet = ItemStack(Material.PLAYER_HEAD).apply {
+                                editMeta {
+                                    val meta = it as SkullMeta
+                                    meta.playerProfile = player.playerProfile
+                                }
+                            }
                             chestplate = ItemStack(Material.LEATHER_CHESTPLATE).apply { leatherMeta() }
                             leggings = ItemStack(Material.LEATHER_LEGGINGS).apply { leatherMeta() }
                             boots = ItemStack(Material.LEATHER_BOOTS).apply { leatherMeta() }
