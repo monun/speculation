@@ -73,7 +73,7 @@ class Piece(board: Board, val name: String, zone: Zone): Attachable() {
         zone.onArrive(journey)
     }
 
-    internal suspend fun deposit(amount: Int, source: Any) {
+    internal suspend fun deposit(amount: Int, source: Zone) {
         balance += amount
         board.game.eventAdapter.call(PieceDepositEvent(this, amount, source))
     }
@@ -150,7 +150,7 @@ class Piece(board: Board, val name: String, zone: Zone): Attachable() {
         ensureAlive()
     }
 
-    internal fun ensureAlive() {
+    private fun ensureAlive() {
         if (isBankrupt) throw BankruptException(this)
     }
 

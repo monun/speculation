@@ -119,13 +119,20 @@ class GameDialogDispatcher {
     }
 
     private suspend fun upgrade(upgradeDialog: GameDialogUpgrade): Boolean {
+        val piece = upgradeDialog.piece
         val property = upgradeDialog.property
         val level = upgradeDialog.level
 
+        val paperPiece = piece.attachment<PaperPiece>()
         val paperProperty = property.attachment<PaperZoneProperty>()
         val channel = Channel<Boolean>()
 
         withContext(Dispatchers.Heartbeat) {
+            if (paperPiece.player == null) {
+                channel.trySend(false)
+                return@withContext
+            }
+
             newDialog(upgradeDialog.piece) {
                 val info = when (val value = upgradeDialog.level.value) {
                     0 -> "땅" to "구입"

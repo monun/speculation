@@ -344,8 +344,8 @@ class PaperGameProcess(
 
 //        game.board.zones.map { it.attachment<PaperZone>() }.forEach { zone ->
 //            val box = zone.box
-//            world.spawnParticle(Particle.REDSTONE, box.minX, box.minY, box.minZ, 0, Particle.DustOptions(Color.RED, 1.0F))
-//            world.spawnParticle(Particle.REDSTONE, box.maxX, box.maxY, box.maxZ, 0, Particle.DustOptions(Color.AQUA, 1.0F))
+//            world.spawnParticle(Particle.REDSTONE, box.minX, box.minY + 1, box.minZ, 0, Particle.DustOptions(Color.RED, 1.0F))
+//            world.spawnParticle(Particle.REDSTONE, box.maxX, box.maxY + 1, box.maxZ, 0, Particle.DustOptions(Color.AQUA, 1.0F))
 //        }
     }
 
