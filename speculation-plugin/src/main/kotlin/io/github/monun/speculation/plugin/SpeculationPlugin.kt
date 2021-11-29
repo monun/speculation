@@ -9,8 +9,9 @@ import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 
-// TODO 메인루틴 주사위까지 테스트
-// TODO 땅 구매 업데이트와 매각까지 구현
+// TODO 스코어보드에 잔액 추가
+// TODO 거래 애니메이션시 스코어보드에 단계적 업데이트
+// TODO 땅 매각
 
 class SpeculationPlugin : JavaPlugin() {
     var process: PaperGameProcess? = null
@@ -76,42 +77,4 @@ class SpeculationPlugin : JavaPlugin() {
 
         return process
     }
-
-/*    private fun registerTest() {
-        val fakeEntityServer = FakeEntityServer.create(this).apply {
-            Bukkit.getOnlinePlayers().forEach { addPlayer(it) }
-        }
-        val dices = arrayListOf<Dice>()
-
-        server.pluginManager.registerEvents(object : Listener {
-            @EventHandler
-            fun onPluginDisable(event: PluginDisableEvent) {
-                if (this@SpeculationPlugin == event.plugin) {
-                    fakeEntityServer.clear()
-                }
-            }
-
-            @EventHandler
-            fun onPlayerJoin(event: PlayerJoinEvent) {
-                fakeEntityServer.addPlayer(event.player)
-            }
-
-            @EventHandler
-            fun onPlayerInteract(event: PlayerInteractEvent) {
-                val loc = event.player.eyeLocation.apply { y += 1.0 }
-                val vec = loc.direction
-                dices += Dice(fakeEntityServer, loc, vec)
-            }
-        }, this)
-
-        val sus = Suspension()
-
-        HeartbeatScope().launch {
-            while (isActive) {
-                sus.delay(50L)
-                dices.forEach { it.onUpdate() }
-                fakeEntityServer.update()
-            }
-        }
-    }*/
 }
