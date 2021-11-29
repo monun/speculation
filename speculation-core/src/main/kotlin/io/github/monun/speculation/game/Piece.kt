@@ -135,18 +135,18 @@ class Piece(board: Board, val name: String, zone: Zone): Attachable() {
         return min(balance, requestAmount).also { balance -= it }
     }
 
-    internal suspend fun withdraw(requestAmount: Int, source: Any) {
+    internal suspend fun withdraw(requestAmount: Int, source: Zone) {
         val amount = withdraw(requestAmount)
 
         board.game.eventAdapter.call(PieceWithdrawEvent(this, amount, source))
         ensureAlive()
     }
 
-    internal suspend fun transfer(requestAmount: Int, receiver: Piece, source: Any) {
+    internal suspend fun transfer(requestAmount: Int, receiver: Piece, zone: Zone) {
         val amount = withdraw(requestAmount)
         receiver.balance += amount
 
-        board.game.eventAdapter.call(PieceTransferEvent(this, amount, receiver, source))
+        board.game.eventAdapter.call(PieceTransferEvent(this, amount, receiver, zone))
         ensureAlive()
     }
 

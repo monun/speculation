@@ -20,6 +20,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.LeatherArmorMeta
 import org.bukkit.inventory.meta.SkullMeta
 import org.bukkit.scheduler.BukkitTask
+import org.bukkit.scoreboard.DisplaySlot
 import org.bukkit.util.BoundingBox
 import org.bukkit.util.Vector
 import java.util.*
@@ -250,6 +251,17 @@ class PaperGameProcess(
 
     private fun registerPlayers(players: Set<Player>) {
         val scoreboard = Bukkit.getScoreboardManager().mainScoreboard
+        val objective = "speculation".let { objectiveName ->
+            scoreboard.getObjective(objectiveName)?.unregister()
+            scoreboard.registerNewObjective(
+                objectiveName,
+                "dummy",
+                Component.text("  SPECULATION  ").decorate(TextDecoration.BOLD).color(NamedTextColor.RED)
+            ).apply {
+                displaySlot = DisplaySlot.SIDEBAR
+            }
+        }
+
         val colors = HashSet<PieceColor>()
         val pieceByIds = hashMapOf<UUID, PaperPiece>()
 
@@ -272,7 +284,7 @@ class PaperGameProcess(
 
                 PaperPiece(this, piece, pieceColor, player).apply {
                     val zone = piece.zone.attachment<PaperZone>()
-
+                    bukkitScore = objective.getScore(player.name).apply { score = piece.balance }
                     stand = fakeEntityServer.spawnEntity(zone.nextLocation(), ArmorStand::class.java).apply {
                         updateMetadata<ArmorStand> {
                             setBasePlate(false)

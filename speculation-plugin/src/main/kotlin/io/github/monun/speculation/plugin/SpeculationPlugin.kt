@@ -9,8 +9,6 @@ import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 
-// TODO 스코어보드에 잔액 추가
-// TODO 거래 애니메이션시 스코어보드에 단계적 업데이트
 // TODO 땅 매각
 
 class SpeculationPlugin : JavaPlugin() {

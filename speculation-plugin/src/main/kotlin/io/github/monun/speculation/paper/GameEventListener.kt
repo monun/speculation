@@ -82,7 +82,8 @@ class GameEventListener(private val process: PaperGameProcess) {
     private suspend fun onPieceDeposit(event: PieceDepositEvent) {
         val piece = event.piece
         val zone = event.zone
-        val count = max(1, sqrt(event.amount.toDouble()).toInt())
+        val amount = event.amount
+        val count = max(1, sqrt(amount.toDouble()).toInt())
 
         val paperPiece = piece.attachment<PaperPiece>()
         val paperZone = zone.attachment<PaperZone>()
@@ -113,21 +114,27 @@ class GameEventListener(private val process: PaperGameProcess) {
 
             val standId = paperPiece.stand.bukkitEntity.entityId
             val standLoc = paperPiece.stand.location
-            emeralds.forEach { emerald ->
+            val prevScore = paperPiece.score
+            emeralds.forEachIndexed { index, emerald ->
                 emerald.broadcastImmediately(PacketSupport.takeItem(emerald.bukkitEntity.entityId, standId, 1))
                 standLoc.playSound(Sound.ENTITY_ITEM_PICKUP, 1.0F)
                 emerald.remove()
+                paperPiece.score = prevScore + amount * (index + 1) / count
+
                 delay(1L) // 1 tick
             }
         }
     }
 
     private suspend fun onPieceWithdraw(event: PieceWithdrawEvent) {
-        val piece = event.piece.attachment<PaperPiece>()
+        val piece = event.piece
+        val paperPiece = piece.attachment<PaperPiece>()
         val count = max(1, sqrt(event.amount.toDouble()).toInt())
 
         withContext(Dispatchers.Heartbeat) {
-            val location = piece.stand.location.apply { y += 1.0 }
+            paperPiece.updateScore(piece.balance)
+
+            val location = paperPiece.stand.location.apply { y += 1.0 }
 
             location.playSound(Sound.BLOCK_CHAIN_PLACE, 0.1F)
 
@@ -150,7 +157,8 @@ class GameEventListener(private val process: PaperGameProcess) {
     private suspend fun onPieceTransfer(event: PieceTransferEvent) {
         val piece = event.piece
         val receiver = event.receiver
-        val count = max(1, sqrt(event.amount.toDouble()).toInt())
+        val amount = event.amount
+        val count = max(1, sqrt(amount.toDouble()).toInt())
 
         val paperPiece = piece.attachment<PaperPiece>()
         val paperReceiver = receiver.attachment<PaperPiece>()
@@ -172,10 +180,12 @@ class GameEventListener(private val process: PaperGameProcess) {
 
             val standId = paperReceiver.stand.bukkitEntity.entityId
             val standLoc = paperReceiver.stand.location
-            emeralds.forEach { emerald ->
+            val prevScore = paperPiece.score
+            emeralds.forEachIndexed { index, emerald ->
                 emerald.broadcastImmediately(PacketSupport.takeItem(emerald.bukkitEntity.entityId, standId, 1))
                 standLoc.playSound(Sound.ENTITY_ITEM_PICKUP, 1.0F)
                 emerald.remove()
+                paperPiece.score = prevScore + amount * (index + 1) / count
                 delay(1L) // 1 tick
             }
         }
