@@ -46,6 +46,7 @@ class PaperGameProcess(
     private lateinit var dices: MutableList<Dice>
 
     lateinit var dialogDispatcher: GameDialogDispatcher
+    lateinit var eventListener: GameEventListener
     private lateinit var bukkitTask: BukkitTask
     private lateinit var listener: PaperGameListener
 
@@ -60,6 +61,7 @@ class PaperGameProcess(
         scope = HeartbeatScope()
         listener = PaperGameListener(this).also { plugin.server.pluginManager.registerEvents(it, plugin) }
         dialogDispatcher = GameDialogDispatcher().apply { register(this@PaperGameProcess) }
+        eventListener = GameEventListener(this)
         bukkitTask = plugin.server.scheduler.runTaskTimer(plugin, ::onUpdate, 0L, 1L)
         dices = arrayListOf()
 
@@ -272,7 +274,6 @@ class PaperGameProcess(
 
                     stand = fakeEntityServer.spawnEntity(zone.nextLocation(), ArmorStand::class.java).apply {
                         updateMetadata<ArmorStand> {
-                            isMarker = true
                             setBasePlate(false)
                             customName(Component.text(player.name))
                             isCustomNameVisible = true
