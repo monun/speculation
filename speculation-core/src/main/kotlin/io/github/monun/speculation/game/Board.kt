@@ -53,6 +53,7 @@ class Board(game: Game) {
         val count = list.count()
         list.forEachIndexed { index, zone ->
             zone.apply {
+                board = this@Board
                 previous = list[(count + index - 1) % count]
                 next = list[(count + index + 1) % count]
             }

@@ -4,6 +4,7 @@ import io.github.monun.heartbeat.coroutines.Heartbeat
 import io.github.monun.heartbeat.coroutines.Suspension
 import io.github.monun.speculation.game.MovementCause
 import io.github.monun.speculation.game.event.PieceMoveEvent
+import io.github.monun.speculation.game.event.PropertyUpgradeEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.math.pow
@@ -11,13 +12,15 @@ import kotlin.math.pow
 class GameEventListener(private val process: PaperGameProcess) {
     init {
         process.game.eventAdapter.apply {
-            register(PieceMoveEvent::class.java, ::onMove)
+            register(PieceMoveEvent::class.java, ::onPieceMove)
+            register(PropertyUpgradeEvent::class.java, ::onPropertyUpgrade)
         }
     }
 
-    private suspend fun onMove(event: PieceMoveEvent) {
+    private suspend fun onPieceMove(event: PieceMoveEvent) {
         val piece = event.piece
-        val zone = event.zone
+        val zone = event.to
+
         val journey = event.journey
 
         val paperPiece = piece.attachment<PaperPiece>()
@@ -28,6 +31,8 @@ class GameEventListener(private val process: PaperGameProcess) {
             val to = paperZone.nextLocation()
             val distance = from.distance(to)
             var ticks = (distance * 1.5).toInt()
+            if (distance < 8.0)
+                ticks = 5
             if (journey.cause == MovementCause.PORTAL) ticks = ticks.shr(1)
 
             val vector = to.clone().subtract(from).toVector()
@@ -44,6 +49,20 @@ class GameEventListener(private val process: PaperGameProcess) {
                 paperPiece.stand.moveTo(location)
             }
             paperPiece.playStepSound()
+        }
+    }
+
+    private suspend fun onPropertyUpgrade(event: PropertyUpgradeEvent) {
+        val property = event.property
+        val piece = event.piece
+
+        val paperProperty = property.attachment<PaperZoneProperty>()
+        val paperPiece = piece.attachment<PaperPiece>()
+
+        withContext(Dispatchers.Heartbeat) {
+            paperProperty.playUpgradeEffect(paperPiece, event.level)
+            paperProperty.updateSlots()
+            paperProperty.updateTolls()
         }
     }
 }

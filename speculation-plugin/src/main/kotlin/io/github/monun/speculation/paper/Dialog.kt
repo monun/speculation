@@ -15,6 +15,7 @@ import java.time.Duration
 
 class Dialog(val piece: PaperPiece) {
     private var message: (() -> Component)? = null
+    private var actionMessage: (() -> Component)? = null
 
     private val buttons = arrayListOf<Button>()
 
@@ -29,19 +30,17 @@ class Dialog(val piece: PaperPiece) {
         this.message = message
     }
 
-    fun button(box: BoundingBox, display: Pair<Component, Location>? = null, action: (Player, Dialog, Button) -> Unit) {
+    fun actionMessage(actionMessage: () -> Component) {
+        if (isDisposed) return
+        this.actionMessage = actionMessage
+    }
+
+    fun button(box: BoundingBox, init: Button.() -> Unit) {
         if (isDisposed) return
 
-        buttons += Button(box, display?.let { (text, location) ->
-            piece.process.fakeEntityServer.spawnEntity(location, ArmorStand::class.java).apply {
-                updateMetadata<ArmorStand> {
-                    customName(text)
-                    isCustomNameVisible = true
-                    isMarker = true
-                    isInvisible = true
-                }
-            }
-        }, action)
+        Button(box).apply(init).also {
+            buttons += it
+        }
     }
 
     fun timeout(message: Component, duration: Long, action: (Dialog) -> Unit) {
@@ -51,14 +50,12 @@ class Dialog(val piece: PaperPiece) {
         }
     }
 
-    fun interact(player: Player, start: Vector, direction: Vector, maxDistance: Double = 96.0) {
-        if (isDisposed) return
-
+    private fun findButton(start: Vector, direction: Vector, maxDistance: Double = 96.0): Button? {
         var found: Button? = null
         var foundDistance = 0.0
 
         for (button in buttons.toList()) {
-            if (button.isDeposed) continue
+            if (button.isDisposed) continue
 
             button.box.rayTrace(start, direction, maxDistance)?.let { result ->
                 val distance = start.distance(result.hitPosition)
@@ -70,9 +67,15 @@ class Dialog(val piece: PaperPiece) {
             }
         }
 
-        found?.let { button ->
-            button.action(player, this, button)
-            buttons.removeIf { it.isDeposed }
+        return found
+    }
+
+    fun interact(player: Player, start: Vector, direction: Vector, maxDistance: Double = 96.0) {
+        if (isDisposed) return
+
+        findButton(start, direction, maxDistance)?.let { button ->
+            button.invoke(player)
+            buttons.removeIf { it.isDisposed }
         }
     }
 
@@ -95,6 +98,25 @@ class Dialog(val piece: PaperPiece) {
                     )
                 )
             }
+
+            val text = Component.text().color(NamedTextColor.WHITE)
+            var isNotEmpty = true
+
+            actionMessage?.invoke()?.let {
+                text.append(it)
+                isNotEmpty = true
+            }
+
+            val location = player.eyeLocation
+            val start = location.toVector()
+            val direction = location.direction
+
+            findButton(start, direction)?.actionMessage?.invoke()?.let {
+                if (isNotEmpty) text.append(Component.text(" / "))
+                text.append(it)
+            }
+
+            player.sendActionBar(text.build())
         }
         timeout?.let {
             // 반환값: 유효할때
@@ -104,13 +126,42 @@ class Dialog(val piece: PaperPiece) {
         }
     }
 
-    class Button(val box: BoundingBox, private val display: FakeEntity?, val action: (Player, Dialog, Button) -> Unit) {
-        var isDeposed = false
+    inner class Button(val box: BoundingBox) {
+        var isDisposed = false
+
+        var actionMessage: (() -> Component)? = null
+            private set
+        private var display: FakeEntity? = null
+        private var onClick: ((Player, Dialog, Button) -> Unit)? = null
+
+        fun actionMessage(actionMessage: () -> Component) {
+            if (isDisposed) return
+            this.actionMessage = actionMessage
+        }
+
+        fun display(location: Location, text: Component) {
+            display = piece.process.fakeEntityServer.spawnEntity(location, ArmorStand::class.java).apply {
+                updateMetadata<ArmorStand> {
+                    isMarker = true
+                    isInvisible = true
+                    isCustomNameVisible = true
+                    customName(text)
+                }
+            }
+        }
+
+        fun onClick(onClick: (Player, Dialog, Button) -> Unit) {
+            this.onClick = onClick
+        }
+
+        internal fun invoke(player: Player) {
+            onClick?.invoke(player, this@Dialog, this)
+        }
 
         fun dispose() {
-            if (isDeposed) return
+            if (isDisposed) return
 
-            isDeposed = true
+            isDisposed = true
             display?.remove()
         }
     }
@@ -127,7 +178,12 @@ class Dialog(val piece: PaperPiece) {
         private val time: Long = currentTime() + duration * 1000000L
 
         private val progressBar =
-            BossBar.bossBar(piece.name.append(Component.text(": ")).append(message.colorIfAbsent(NamedTextColor.WHITE)), 1.0F, piece.color.group.barColor, BossBar.Overlay.PROGRESS)
+            BossBar.bossBar(
+                piece.name.append(Component.text(": ")).append(message.colorIfAbsent(NamedTextColor.WHITE)),
+                1.0F,
+                piece.color.group.barColor,
+                BossBar.Overlay.PROGRESS
+            )
 
         fun showProgressBar(players: Collection<Player> = Bukkit.getOnlinePlayers()) {
             players.forEach { it.showBossBar(progressBar) }

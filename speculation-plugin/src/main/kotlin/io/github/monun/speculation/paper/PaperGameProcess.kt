@@ -96,8 +96,8 @@ class PaperGameProcess(
             val width = 3
 
             var box = BoundingBox(
-                x.toDouble(), y, z.toDouble(),
-                (x + width).toDouble(), (y - 1.0), (z + width).toDouble()
+                x.toDouble(), y - 1.0, z.toDouble(),
+                (x + width).toDouble(), y, (z + width).toDouble()
             ).expandDirectional(
                 -innerFace.modX.toDouble(),
                 0.0,
@@ -209,7 +209,7 @@ class PaperGameProcess(
                 val tagLocation = this.location.add(innerFace.modX * 1.5, 1.25, innerFace.modZ * 1.5)
                 nameTag =
                     tagLocation.spawnTag(Component.text(name).color(NamedTextColor.GOLD).decorate(TextDecoration.BOLD))
-                priceTag = tagLocation.apply { y -= 0.3 }.spawnTag(Component.text(0))
+                tollsTag = tagLocation.apply { y -= 0.3 }.spawnTag(Component.text(0))
             }
         }
     }
@@ -319,10 +319,6 @@ class PaperGameProcess(
         }
     }
 
-    private fun registerEvents() {
-        // TODO
-    }
-
     fun spawnDice(location: Location, piece: PaperPiece, offset: Vector): Dice {
         checkState()
         return Dice(fakeEntityServer, location).apply {
@@ -344,6 +340,12 @@ class PaperGameProcess(
         }
 
         fakeEntityServer.update()
+
+//        game.board.zones.map { it.attachment<PaperZone>() }.forEach { zone ->
+//            val box = zone.box
+//            world.spawnParticle(Particle.REDSTONE, box.minX, box.minY, box.minZ, 0, Particle.DustOptions(Color.RED, 1.0F))
+//            world.spawnParticle(Particle.REDSTONE, box.maxX, box.maxY, box.maxZ, 0, Particle.DustOptions(Color.AQUA, 1.0F))
+//        }
     }
 
     fun unregister() {

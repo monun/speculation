@@ -4,19 +4,23 @@ import io.github.monun.speculation.game.Journey
 import io.github.monun.speculation.game.Piece
 import io.github.monun.speculation.game.dialog.GameDialogAcquisition
 import io.github.monun.speculation.game.dialog.GameDialogUpgrade
+import io.github.monun.speculation.game.event.PropertyUpgradeEvent
 import io.github.monun.speculation.game.message.GameMessage
 
 class ZoneProperty : Zone() {
+
     var owner: Piece? = null
         internal set
 
     var level = 0
         internal set
 
-    // 0: 땅, 1: 빌라, 2: 빌딩, 3: 호텔, 4: 랜드마크
-    val levels = List(5) {
-        Level(it)
-    }
+    val levelFlag = Level(0)
+    val levelVilla = Level(1)
+    val levelBuilding = Level(2)
+    val levelHotel = Level(3)
+    val levelLandmark = Level(4)
+    val levels = listOf(levelFlag, levelVilla, levelBuilding, levelHotel, levelLandmark)
 
     /**
      * 총 통행료
@@ -34,7 +38,7 @@ class ZoneProperty : Zone() {
         }
 
     /**
-     * 총 자산 가치 x0.5
+     * 총 자산 가치 = 총 비용 x 0.5
      */
     val assets: Int
         get() {
@@ -85,18 +89,22 @@ class ZoneProperty : Zone() {
         if (owner == null || owner.isFriendly(piece)) {
             for (level in levels) {
                 if (level.condition) continue
+                if (level.value > piece.level) break
 
                 val costs = level.costs
-                if (costs > piece.balance || !piece.request(
-                        GameDialogUpgrade(this, level),
-                        GameMessage.UPGRADE
-                    ) { false }
-                ) break
+                if (costs > piece.balance || !piece.request(GameDialogUpgrade(this, level), GameMessage.UPGRADE) {
+                        false
+                    }
+                ) {
+                    break
+                }
 
                 piece.withdraw(tolls, this)
 
                 if (this.owner == null) this.owner = piece
                 this.level = level.value
+
+                board.game.eventAdapter.call(PropertyUpgradeEvent(this@ZoneProperty, level, piece))
             }
         }
     }

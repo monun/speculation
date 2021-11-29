@@ -4,9 +4,11 @@ import io.github.monun.heartbeat.coroutines.Heartbeat
 import io.github.monun.heartbeat.coroutines.Suspension
 import io.github.monun.speculation.game.Piece
 import io.github.monun.speculation.game.dialog.GameDialogDice
+import io.github.monun.speculation.game.dialog.GameDialogUpgrade
 import io.github.monun.speculation.game.message.GameMessage
 import io.github.monun.tap.math.toRadians
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import net.kyori.adventure.text.Component
@@ -26,6 +28,7 @@ class GameDialogDispatcher {
         this.process = process
         process.game.dialogAdapter.apply {
             register(GameDialogDice::class.java, ::dice)
+            register(GameDialogUpgrade::class.java, ::upgrade)
         }
     }
 
@@ -51,22 +54,28 @@ class GameDialogDispatcher {
                 paperPiece.player?.location?.apply { y += 2.5 } ?: PaperGameConfig.center.toLocation(process.world)
             val numberOfDice = diceDialog.numberOfDice
             val dices = List(diceDialog.numberOfDice) {
-                process.spawnDice(location, paperPiece, Vector(2.0, 2.5, 0.0).rotateAroundY((360.0 / numberOfDice).toRadians() * it))
+                process.spawnDice(
+                    location,
+                    paperPiece,
+                    Vector(2.0, 2.5, 0.0).rotateAroundY((360.0 / numberOfDice).toRadians() * it)
+                )
             }
 
             newDialog(diceDialog.piece) {
                 message {
                     Component.text("보드를 클릭해 주사위를 굴리세요!")
                 }
-                button(PaperGameConfig.centerBox) { player, _, _ ->
-                    val velocity = player.location.direction
-                    dices.forEach { dice ->
-                        dice.roll(
-                            velocity.clone()
-                                .add(Vector.getRandom().subtract(Vector(0.5, 0.5, 0.5)).normalize().multiply(0.2))
-                        )
+                button(PaperGameConfig.centerBox) {
+                    onClick { player, _, _ ->
+                        val velocity = player.location.direction
+                        dices.forEach { dice ->
+                            dice.roll(
+                                velocity.clone()
+                                    .add(Vector.getRandom().subtract(Vector(0.5, 0.5, 0.5)).normalize().multiply(0.2))
+                            )
+                        }
+                        disposeCurrentDialog()
                     }
-                    disposeCurrentDialog()
                 }
                 timeout(Component.text("주사위"), 15L * 1000L) {
                     dices.filter { it.isBeforeRoll }.forEach { it.roll(Vector(0.0, 1.0, 0.0)) }
@@ -109,4 +118,61 @@ class GameDialogDispatcher {
         }
     }
 
+    private suspend fun upgrade(upgradeDialog: GameDialogUpgrade): Boolean {
+        val property = upgradeDialog.property
+        val level = upgradeDialog.level
+
+        val paperProperty = property.attachment<PaperZoneProperty>()
+        val channel = Channel<Boolean>()
+
+        withContext(Dispatchers.Heartbeat) {
+            newDialog(upgradeDialog.piece) {
+                val info = when (val value = upgradeDialog.level.value) {
+                    0 -> "땅" to "구입"
+                    1 -> "빌라" to "건설"
+                    2 -> "빌딩" to "건설"
+                    3 -> "호텔" to "건설"
+                    4 -> "랜드마크" to "건설"
+                    else -> error("Unknown property level $value")
+                }
+
+                message {
+                    Component.text("부동산을 클릭하여 업그레이드하세요")
+                }
+                actionMessage {
+                    val text = Component.text()
+                    text.append(Component.text(info.first))
+                    text.append(Component.space())
+                    text.append(Component.text(info.second))
+                    text.append(Component.space())
+                    text.append(Component.text("비용: "))
+                    text.append(Component.text(level.costs))
+                    text.build()
+                }
+                button(paperProperty.box) {
+                    actionMessage {
+                        Component.text("확인")
+                    }
+                    onClick { _, _, _ ->
+                        channel.trySend(true)
+                        disposeCurrentDialog()
+                    }
+                }
+                button(PaperGameConfig.centerBox) {
+                    actionMessage {
+                        Component.text("취소")
+                    }
+                    onClick { _, _, _ ->
+                        channel.trySend(false)
+                        disposeCurrentDialog()
+                    }
+                }
+                timeout(Component.text("부동산 업그레이드"), 15L * 1000L) {
+                    channel.trySend(false)
+                }
+            }
+        }
+
+        return channel.receive()
+    }
 }

@@ -14,6 +14,7 @@ import io.github.monun.speculation.ref.upstream
 import kotlin.math.min
 
 class Piece(board: Board, val name: String, zone: Zone): Attachable() {
+
     val board = upstream(board)
 
     var team: PieceTeam? = null
@@ -36,6 +37,8 @@ class Piece(board: Board, val name: String, zone: Zone): Attachable() {
     val assets: Int
         get() = properties.sumOf { it.assets }
 
+    var level = 0
+
     fun isFriendly(piece: Piece): Boolean {
         if (piece === this) return true
 
@@ -55,17 +58,19 @@ class Piece(board: Board, val name: String, zone: Zone): Attachable() {
         }
 
         journey.from.onLeave(journey)
+        var prev = journey.from
 
         for (zone in journey.path) {
             this.zone = zone
+            board.game.eventAdapter.call(PieceMoveEvent(this, journey, prev, zone))
             zone.onPass(journey)
             journey.pass(zone)
-            board.game.eventAdapter.call(PieceMoveEvent(this, journey, zone))
+            prev = zone
         }
 
         zone = journey.destination
+        board.game.eventAdapter.call(PieceMoveEvent(this, journey, prev, zone))
         zone.onArrive(journey)
-        board.game.eventAdapter.call(PieceMoveEvent(this, journey, zone))
     }
 
     internal suspend fun deposit(amount: Int, source: Any) {

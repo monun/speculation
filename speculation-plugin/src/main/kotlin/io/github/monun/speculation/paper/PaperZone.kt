@@ -2,6 +2,7 @@ package io.github.monun.speculation.paper
 
 import io.github.monun.speculation.game.zone.Zone
 import io.github.monun.speculation.game.zone.ZoneProperty
+import net.kyori.adventure.text.Component
 import org.bukkit.Location
 import org.bukkit.Rotation
 import org.bukkit.util.BoundingBox
@@ -20,6 +21,7 @@ abstract class PaperZone {
 
     lateinit var process: PaperGameProcess
     var isCorner = false
+    lateinit var name: String
     lateinit var box: BoundingBox
     lateinit var forwardFace: Face
     lateinit var reverseFace: Face
