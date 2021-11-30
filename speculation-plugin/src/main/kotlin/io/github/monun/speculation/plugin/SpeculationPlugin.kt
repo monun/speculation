@@ -9,7 +9,16 @@ import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 
+// TODO 주사위를 묶음으로 처리
+// TODO 땅 금액 설정
+// TODO 인수
 // TODO 땅 매각
+// TODO 겜블
+// TODO 감옥
+// TODO 페스티벌
+// TODO 포탈
+// TODO 국세청
+// TODO 이벤트
 
 class SpeculationPlugin : JavaPlugin() {
     var process: PaperGameProcess? = null
@@ -18,6 +27,7 @@ class SpeculationPlugin : JavaPlugin() {
     override fun onEnable() {
         kommand {
             register("speculation") {
+                permission("speculation.commands")
                 then("start") {
                     then("world" to dimension(), "players" to players(), "teamMatch" to bool()) {
                         executes {
