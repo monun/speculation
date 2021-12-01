@@ -4,5 +4,7 @@ enum class GameMessage {
     ROLL_THE_DICE,
     ACQUISITION,
     UPGRADE,
-    SEIZURE
+    SEIZURE,
+    BETTING,
+    ROLL_THE_DICE_FOR_GAMBLE,
 }

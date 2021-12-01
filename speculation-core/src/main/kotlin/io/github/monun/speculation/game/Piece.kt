@@ -97,6 +97,8 @@ class Piece(board: Board, val name: String, zone: Zone) : Attachable() {
     }
 
     private suspend fun withdraw(requestAmount: Int): Int {
+        if (isBankrupt) return 0
+
         if (balance < requestAmount) {
             val assets = assets
             val total = balance + assets
@@ -142,19 +144,21 @@ class Piece(board: Board, val name: String, zone: Zone) : Attachable() {
         return min(balance, requestAmount).also { balance -= it }
     }
 
-    internal suspend fun withdraw(requestAmount: Int, source: Zone) {
+    internal suspend fun withdraw(requestAmount: Int, source: Zone): Int {
         val amount = withdraw(requestAmount)
 
         board.game.eventAdapter.call(PieceWithdrawEvent(this, amount, source))
-        ensureAlive()
+
+        return amount
     }
 
-    internal suspend fun transfer(requestAmount: Int, receiver: Piece, zone: Zone) {
+    internal suspend fun transfer(requestAmount: Int, receiver: Piece, zone: Zone): Int {
         val amount = withdraw(requestAmount)
         receiver.balance += amount
 
         board.game.eventAdapter.call(PieceTransferEvent(this, amount, receiver, zone))
-        ensureAlive()
+
+        return amount
     }
 
     private fun ensureAlive() {
