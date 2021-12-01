@@ -27,6 +27,7 @@ class GameEventListener(private val process: PaperGameProcess) {
             register(PieceWithdrawEvent::class.java, ::onPieceWithdraw)
             register(PieceDepositEvent::class.java, ::onPieceDeposit)
             register(PieceTransferEvent::class.java, ::onPieceTransfer)
+            register(PropertyAcquisitionEvent::class.java, ::onPropertyAcquisition)
         }
     }
 
@@ -74,6 +75,16 @@ class GameEventListener(private val process: PaperGameProcess) {
 
         withContext(Dispatchers.Heartbeat) {
             paperProperty.playUpgradeEffect(paperPiece, event.level)
+            paperProperty.updateSlots()
+            paperProperty.updateTolls()
+        }
+    }
+
+    private suspend fun onPropertyAcquisition(event: PropertyAcquisitionEvent) {
+        val property = event.property
+        val paperProperty = property.attachment<PaperZoneProperty>()
+
+        withContext(Dispatchers.Heartbeat) {
             paperProperty.updateSlots()
             paperProperty.updateTolls()
         }

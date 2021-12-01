@@ -19,6 +19,7 @@ class PieceMoveEvent(piece: Piece, val journey: Journey, val from: Zone, val to:
 abstract class PropertyEvent(val property: ZoneProperty): GameEvent
 //class PropertyUpdateEvent(property: ZoneProperty) : PropertyEvent(property)
 class PropertyUpgradeEvent(property: ZoneProperty, val level: ZoneProperty.Level, val piece: Piece) : PropertyEvent(property)
+class PropertyAcquisitionEvent(property: ZoneProperty, val from: Piece, val to: Piece) : PropertyEvent(property)
 
 class GameOverEvent(): GameEvent
 
