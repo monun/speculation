@@ -114,6 +114,19 @@ class ZoneProperty : Zone() {
         level = 0
     }
 
+    fun initLevels(baseTolls: Int) {
+        fun Level.init(tolls: Int) {
+            this.costs = tolls
+            this.tolls = tolls
+        }
+
+        levelFlag.init(baseTolls)
+        levelVilla.init(baseTolls)
+        levelBuilding.init(baseTolls + baseTolls / 2)
+        levelHotel.init(baseTolls * 2)
+        levelLandmark.init(baseTolls * 2 + baseTolls / 2)
+    }
+
     inner class Level(val value: Int) {
         var tolls = 0
             internal set
