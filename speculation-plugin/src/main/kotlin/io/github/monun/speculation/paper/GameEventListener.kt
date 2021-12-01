@@ -102,7 +102,7 @@ class GameEventListener(private val process: PaperGameProcess) {
 
         withContext(Dispatchers.Heartbeat) {
             val box = paperZone.box
-            val point = paperZone.box.min.toLocation(process.world).apply { y = box.maxY }
+            val point = paperZone.box.min.toLocation(process.world).apply { y = box.maxY + 0.25 }
             val xWidth = box.widthX
             val zWidth = box.widthZ
 

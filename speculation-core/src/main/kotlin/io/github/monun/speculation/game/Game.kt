@@ -52,15 +52,16 @@ class Game {
         turnQueue = ArrayDeque()
 
         scope.launch(dispatcher) {
-            // debug
-            val pieces = board.pieces.values
-            board.zoneProperties.forEach {
-                pieces.random().let { piece ->
-                        it.upgrade(piece, piece, 4)
-                }
-            }
-            pieces.forEach { it.withdraw(400, board.zones.first()) }
-            // debug end
+            // ======================================= debug start =======================================
+//            val pieces = board.pieces.values
+//            board.zoneProperties.forEach {
+//                pieces.random().let { piece ->
+//                        it.upgrade(piece, piece, 4)
+//                }
+//            }
+//            pieces.forEach { it.withdraw(400, board.zones.first()) }
+//            pieces.forEach { it.zone = board.zones.last() }
+            // ======================================= debug end =======================================
 
             try {
                 while (isActive) {

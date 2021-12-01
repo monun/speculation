@@ -29,7 +29,7 @@ class Piece(board: Board, val name: String, zone: Zone) : Attachable() {
         private set
 
     var zone: Zone = zone
-        private set
+        internal set
 
     val properties: List<ZoneProperty>
         get() = board.zoneProperties.filter { it.owner == this }
