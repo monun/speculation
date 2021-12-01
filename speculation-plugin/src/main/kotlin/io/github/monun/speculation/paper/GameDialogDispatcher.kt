@@ -12,6 +12,7 @@ import io.github.monun.speculation.game.zone.ZoneProperty
 import io.github.monun.tap.math.toRadians
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import net.kyori.adventure.text.Component
@@ -336,6 +337,7 @@ class GameDialogDispatcher {
                 selected.forEach {
                     it.playSelectionEffect()
                 }
+                delay(1L)
             }
 
             selected.map { it.zone }

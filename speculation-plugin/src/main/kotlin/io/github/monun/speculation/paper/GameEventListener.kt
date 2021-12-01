@@ -28,6 +28,7 @@ class GameEventListener(private val process: PaperGameProcess) {
             register(PieceDepositEvent::class.java, ::onPieceDeposit)
             register(PieceTransferEvent::class.java, ::onPieceTransfer)
             register(PropertyAcquisitionEvent::class.java, ::onPropertyAcquisition)
+            register(PropertyClearEvent::class.java, ::onPropertyClear)
         }
     }
 
@@ -199,6 +200,16 @@ class GameEventListener(private val process: PaperGameProcess) {
                 paperPiece.score = prevScore + amount * (index + 1) / count
                 delay(1L) // 1 tick
             }
+        }
+    }
+
+    private suspend fun onPropertyClear(event: PropertyClearEvent) {
+        val property = event.property
+        val paperProperty = property.attachment<PaperZoneProperty>()
+
+        withContext(Dispatchers.Heartbeat) {
+            paperProperty.playClearEffect()
+            paperProperty.updateSlots()
         }
     }
 }

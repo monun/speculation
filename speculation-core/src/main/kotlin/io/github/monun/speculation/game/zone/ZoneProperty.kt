@@ -5,6 +5,7 @@ import io.github.monun.speculation.game.Piece
 import io.github.monun.speculation.game.dialog.GameDialogAcquisition
 import io.github.monun.speculation.game.dialog.GameDialogUpgrade
 import io.github.monun.speculation.game.event.PropertyAcquisitionEvent
+import io.github.monun.speculation.game.event.PropertyClearEvent
 import io.github.monun.speculation.game.event.PropertyUpgradeEvent
 import io.github.monun.speculation.game.message.GameMessage
 import kotlinx.coroutines.processNextEventInCurrentThread
@@ -118,9 +119,14 @@ class ZoneProperty : Zone() {
         }
     }
 
-    fun clear() {
-        owner = null
-        level = 0
+    suspend fun clear() {
+        val owner = owner
+        val level = this.level
+
+        this.owner = null
+        this.level = 0
+
+        if (owner != null) board.game.eventAdapter.call(PropertyClearEvent(this, owner, level))
     }
 
     fun initLevels(baseTolls: Int) {
