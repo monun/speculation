@@ -10,18 +10,22 @@ import kotlin.math.max
 import kotlin.math.min
 
 class ZoneGamble : Zone() {
+    private var visitCount = 0
+
     override suspend fun onArrive(journey: Journey) {
+        visitCount++
         val piece = journey.piece
         if (piece.balance <= 0) return
 
-        var betting = piece.request(GameDialogBetting(), GameMessage.BETTING) { 0 }
+        val maxBetting = min(50 + (visitCount - 1) * 10, piece.balance)
+        var betting = piece.request(GameDialogBetting(maxBetting), GameMessage.BETTING) { 0 }
 
         if (betting > 0) {
-            betting = min(betting, piece.balance)
+            betting = min(betting, maxBetting)
             val gamblers = piece.board.survivors.toMutableList().apply {
                 shuffle()
                 remove(piece)
-                add(0, piece)
+                add(piece) // 주최자가 마지막에 주사위를 던짐
             }
 
             board.game.eventAdapter.call(PieceGambleStartEvent(piece, betting, gamblers))
@@ -34,18 +38,27 @@ class ZoneGamble : Zone() {
             val winners = results.filter { it.value == maxValue }
             val losers = results.filter { it.key !in winners }
 
-            board.game.eventAdapter.call(PieceGambleEndEvent(winners.keys.toList(), losers.keys.toList(), betting))
-
-            var prize = 0
+            var totalPrize = 0
 
             for (loser in losers.keys) {
-                prize += loser.withdraw(betting, this)
+                totalPrize += loser.withdraw(betting, this)
             }
 
-            val prizePerWinner = max(1, prize / winners.count())
+            val prizePerWinner = max(1, totalPrize / winners.count())
+
+            board.game.eventAdapter.call(
+                PieceGambleEndEvent(
+                    winners.keys.toList(),
+                    losers.keys.toList(),
+                    prizePerWinner
+                )
+            )
+
             for (winner in winners.keys) {
                 winner.deposit(prizePerWinner, this)
             }
+
+            board.game.checkGameOver()
         }
     }
 }

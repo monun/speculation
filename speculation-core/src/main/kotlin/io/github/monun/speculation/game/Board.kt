@@ -23,7 +23,7 @@ class Board(game: Game) {
         ZoneProperty(),
         ZoneProperty(),
 
-        ZoneEvent(),
+        ZoneMagic(),
         ZoneProperty(),
         ZoneProperty(),
         ZoneProperty(),
@@ -34,7 +34,7 @@ class Board(game: Game) {
         ZoneProperty(),
         ZoneProperty(),
 
-        ZoneEvent(),
+        ZoneMagic(),
         ZoneProperty(),
         ZoneProperty(),
         ZoneProperty(),
@@ -45,7 +45,7 @@ class Board(game: Game) {
         ZoneProperty(),
         ZoneProperty(),
 
-        ZoneEvent(),
+        ZoneMagic(),
         ZoneProperty(),
         ZoneNTS(),
         ZoneProperty()

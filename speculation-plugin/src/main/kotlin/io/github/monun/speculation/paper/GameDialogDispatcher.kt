@@ -3,10 +3,7 @@ package io.github.monun.speculation.paper
 import io.github.monun.heartbeat.coroutines.Heartbeat
 import io.github.monun.heartbeat.coroutines.Suspension
 import io.github.monun.speculation.game.Piece
-import io.github.monun.speculation.game.dialog.GameDialogAcquisition
-import io.github.monun.speculation.game.dialog.GameDialogDice
-import io.github.monun.speculation.game.dialog.GameDialogSeizure
-import io.github.monun.speculation.game.dialog.GameDialogUpgrade
+import io.github.monun.speculation.game.dialog.*
 import io.github.monun.speculation.game.message.GameMessage
 import io.github.monun.speculation.game.zone.ZoneProperty
 import io.github.monun.tap.math.toRadians
@@ -19,6 +16,7 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.title.Title
+import org.bukkit.Bukkit
 import org.bukkit.util.Vector
 import java.time.Duration
 
@@ -36,6 +34,7 @@ class GameDialogDispatcher {
             register(GameDialogUpgrade::class.java, ::upgrade)
             register(GameDialogAcquisition::class.java, ::acquisition)
             register(GameDialogSeizure::class.java, ::seizure)
+            register(GameDialogBetting::class.java, ::betting)
         }
     }
 
@@ -112,9 +111,12 @@ class GameDialogDispatcher {
                 title.append(Component.text("더블! ").decorate(TextDecoration.BOLD))
             }
             dices.forEachIndexed { index, dice ->
-                if (index != 0) title.append(Component.text(" + "))
+                if (index != 0) title.append(Component.text("+"))
                 title.append(Component.text(dice.value))
             }
+            // 주사위를 2개 이상 요청할때 결과값 출력
+            if (numberOfDice > 2) title.append(Component.text("=").append(Component.text(dices.sumOf { it.value }).color(NamedTextColor.AQUA)))
+
             process.world.showTitle(
                 Title.title(
                     title.build(),
@@ -352,6 +354,45 @@ class GameDialogDispatcher {
             }
 
             selected.map { it.zone }
+        }
+    }
+
+    private suspend fun betting(bettingDialog: GameDialogBetting): Int {
+        val max = bettingDialog.max
+        val piece = bettingDialog.piece
+
+        return withContext(Dispatchers.Heartbeat) {
+            val channel = Channel<Int>()
+
+            newDialog(piece) {
+                message {
+                    Component.text("채팅창에 배팅 금액을 입력하세요")
+                }
+                actionMessage {
+                    Component.text(("최대 배팅 가능 금액: $max"))
+                }
+                terminal { text ->
+                    text.toIntOrNull()?.let { value ->
+                        channel.trySend(value.coerceIn(1, max))
+                        disposeCurrentDialog()
+                    }
+                }
+                button(PaperGameConfig.centerBox) {
+                    actionMessage {
+                        Component.text("취소")
+                    }
+                    onClick { _, _, _ ->
+                        channel.trySend(0)
+                        disposeCurrentDialog()
+                    }
+                }
+                timeout(Component.text("배팅"), 15L * 1000L) {
+                    channel.trySend(0)
+                    disposeCurrentDialog()
+                }
+            }
+
+            channel.receive()
         }
     }
 }

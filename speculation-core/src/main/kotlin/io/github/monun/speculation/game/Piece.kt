@@ -107,7 +107,6 @@ class Piece(board: Board, val name: String, zone: Zone) : Attachable() {
                 balance = 0
                 isBankrupt = true
                 board.game.eventAdapter.call(PieceBankruptEvent(this))
-                board.game.checkGameOver()
 
                 return total
             }

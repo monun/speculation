@@ -1,7 +1,6 @@
 package io.github.monun.speculation.paper
 
-import io.github.monun.speculation.game.zone.Zone
-import io.github.monun.speculation.game.zone.ZoneProperty
+import io.github.monun.speculation.game.zone.*
 import net.kyori.adventure.text.Component
 import org.bukkit.Location
 import org.bukkit.Rotation
@@ -13,7 +12,14 @@ abstract class PaperZone {
     companion object {
         fun of(zone: Zone): PaperZone = when (zone) {
             is ZoneProperty -> PaperZoneProperty(zone)
-            else -> PaperZoneSpecial(zone)
+            is ZoneStart -> PaperZoneStart(zone)
+            is ZoneGamble -> PaperZoneGamble(zone)
+            is ZoneJail -> PaperZoneJail(zone)
+            is ZoneMagic -> PaperZoneMagic(zone)
+            is ZoneFestival -> PaperZoneFestival(zone)
+            is ZonePortal -> PaperZonePortal(zone)
+            is ZoneNTS -> PaperZoneNTS(zone)
+            else -> error("impossible")
         }
     }
 
@@ -42,6 +48,9 @@ abstract class PaperZone {
         x += Random.nextDouble(wiggle) - half
         z += Random.nextDouble(wiggle) - half
     }
+
+    open fun playArriveEffect() = Unit
+    open fun playLeaveEffect() = Unit
 
     abstract fun destroy()
 }

@@ -17,6 +17,7 @@ class Dialog(val piece: PaperPiece) {
     private var message: (() -> Component)? = null
     private var actionMessage: (() -> Component)? = null
 
+    private var terminal: ((String) -> Unit)? = null
     private val buttons = arrayListOf<Button>()
 
     var timeout: Timeout? = null
@@ -33,6 +34,10 @@ class Dialog(val piece: PaperPiece) {
     fun actionMessage(actionMessage: () -> Component) {
         if (isDisposed) return
         this.actionMessage = actionMessage
+    }
+
+    fun terminal(terminal: (String) -> Unit) {
+        this.terminal = terminal
     }
 
     fun button(box: BoundingBox, init: Button.() -> Unit) {
@@ -77,6 +82,10 @@ class Dialog(val piece: PaperPiece) {
             button.invoke(player)
             buttons.removeIf { it.isDisposed }
         }
+    }
+
+    fun interact(text: String) {
+        terminal?.invoke(text)
     }
 
     fun dispose() {

@@ -86,7 +86,11 @@ class Game {
                         }
 
                         from.onTryLeave(piece, diceResult)
-                        piece.moveTo(from.shift(diceResult.sum()), Movement.FORWARD, MovementCause.DICE, piece)
+//                        piece.moveTo(from.shift(diceResult.sum()), Movement.FORWARD, MovementCause.DICE, piece)
+
+                        // ======================================= 디버그: 겜블 =======================================
+                        piece.moveTo(board.zoneSpecials[1], Movement.FORWARD, MovementCause.DICE, piece) // debug
+                        // ======================================= 디버그: 겜블 =======================================
 
                     }
                     catch (bankrupt: BankruptException) {}

@@ -10,10 +10,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextDecoration
+import net.kyori.adventure.title.Title
+import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.Vector
+import java.time.Duration
 import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -29,6 +35,8 @@ class GameEventListener(private val process: PaperGameProcess) {
             register(PieceTransferEvent::class.java, ::onPieceTransfer)
             register(PropertyAcquisitionEvent::class.java, ::onPropertyAcquisition)
             register(PropertyClearEvent::class.java, ::onPropertyClear)
+            register(PieceGambleStartEvent::class.java, ::onPieceGambleStart)
+            register(PieceGambleEndEvent::class.java, ::onPieceGambleEnd)
         }
     }
 
@@ -213,5 +221,81 @@ class GameEventListener(private val process: PaperGameProcess) {
             paperProperty.playClearEffect()
             paperProperty.updateSlots()
         }
+    }
+
+    private suspend fun onPieceGambleStart(event: PieceGambleStartEvent) {
+        val piece = event.piece
+        val betting = event.betting
+
+        val paperPiece = piece.attachment<PaperPiece>()
+
+        withContext(Dispatchers.Heartbeat) {
+            Bukkit.getServer().showTitle(
+                Title.title(
+                    paperPiece.name,
+                    Component.text("겜블: ").append(
+                        Component.text(betting)
+                            .color(NamedTextColor.DARK_GREEN)
+                    ),
+                    Title.Times.of(
+                        Duration.ofMillis(250),
+                        Duration.ofSeconds(2),
+                        Duration.ofMillis(250)
+                    )
+                )
+            )
+            delay(2500L)
+        }
+    }
+
+    private suspend fun onPieceGambleEnd(event: PieceGambleEndEvent) {
+        val prize = event.prizePerWinner
+        val winners = event.winners
+        val losers = event.losers
+
+        val subtitleText = Component.text().also {
+            winners.forEachIndexed { index, piece ->
+                if (index > 0) it.append(Component.space())
+                it.append(piece.attachment<PaperPiece>().name.decorate(TextDecoration.BOLD))
+            }
+            if (losers.isNotEmpty()) {
+                it.append(Component.text(" / "))
+
+                losers.forEachIndexed { index, piece ->
+                    if (index > 0) it.append(Component.space())
+                    it.append(piece.attachment<PaperPiece>().name.decorate(TextDecoration.STRIKETHROUGH))
+                }
+            }
+        }.build()
+
+        val times = Title.Times.of(
+            Duration.ofMillis(250),
+            Duration.ofSeconds(2),
+            Duration.ofMillis(250)
+        )
+
+        val titleForWinner = Title.title(
+            Component.text("성공! +$prize").color(NamedTextColor.GOLD),
+            subtitleText,
+            times
+        )
+        val titleForLoser = Title.title(
+            Component.text("실패! +$prize").color(NamedTextColor.RED),
+            subtitleText,
+            times
+        )
+
+        withContext(Dispatchers.Heartbeat) {
+            Bukkit.getOnlinePlayers().forEach { player ->
+                val playerPiece = process.piece(player)
+
+                if (playerPiece != null && playerPiece.piece in losers) {
+                    player.showTitle(titleForLoser)
+                } else {
+                    player.showTitle(titleForWinner)
+                }
+            }
+        }
+        delay(2500L)
     }
 }
