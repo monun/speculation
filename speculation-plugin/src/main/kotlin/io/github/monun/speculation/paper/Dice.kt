@@ -18,7 +18,6 @@ class Dice(fakeEntityServer: FakeEntityServer, loc: Location) {
         const val stateRolling = 1
         const val stateOnGround = 2
 
-
         private val faces = listOf(
             DiceFace(1, Vector(0.0, 1.0, 0.0)),
             DiceFace(2, Vector(-1.0, 0.0, 0.0)),

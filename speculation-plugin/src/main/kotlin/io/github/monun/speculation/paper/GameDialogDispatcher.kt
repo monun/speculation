@@ -49,6 +49,8 @@ class GameDialogDispatcher {
 
     private suspend fun dice(diceDialog: GameDialogDice): List<Int> {
         return withContext(Dispatchers.Heartbeat) {
+            process.clearDices()
+
             val paperPiece: PaperPiece = diceDialog.piece.attachment()
             val location =
                 paperPiece.player?.location?.apply { y += 2.5 } ?: PaperGameConfig.center.toLocation(process.world)

@@ -341,6 +341,10 @@ class PaperGameProcess(
         }
     }
 
+    fun clearDices() {
+        dices.onEach { it.remove() }.clear()
+    }
+
     fun piece(uniqueId: UUID) = pieceByIds[uniqueId]
 
     fun piece(player: Player) = piece(player.uniqueId)
