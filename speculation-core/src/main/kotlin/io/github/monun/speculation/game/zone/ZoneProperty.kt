@@ -4,8 +4,10 @@ import io.github.monun.speculation.game.Journey
 import io.github.monun.speculation.game.Piece
 import io.github.monun.speculation.game.dialog.GameDialogAcquisition
 import io.github.monun.speculation.game.dialog.GameDialogUpgrade
+import io.github.monun.speculation.game.event.PropertyAcquisitionEvent
 import io.github.monun.speculation.game.event.PropertyUpgradeEvent
 import io.github.monun.speculation.game.message.GameMessage
+import kotlinx.coroutines.processNextEventInCurrentThread
 
 class ZoneProperty : Zone() {
 
@@ -81,6 +83,8 @@ class ZoneProperty : Zone() {
                 if (piece.request(GameDialogAcquisition(this, acquisitionCosts), GameMessage.ACQUISITION) { false }) {
                     piece.transfer(tolls, owner, this)
                     this.owner = piece
+
+                    board.game.eventAdapter.call(PropertyAcquisitionEvent(this, owner, piece))
                 }
             }
         }
