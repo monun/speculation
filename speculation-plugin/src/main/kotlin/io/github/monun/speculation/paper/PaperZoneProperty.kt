@@ -73,8 +73,7 @@ class PaperZoneProperty(
 
     fun updateTolls() {
         val text = Component.text()
-        text.content(zone.tolls.toString())
-        text.color(NamedTextColor.GREEN)
+        text.content(zone.tolls.toString()).color(NamedTextColor.GREEN)
 
         tollsTag.updateMetadata<ArmorStand> {
             customName(text.build())
@@ -90,7 +89,7 @@ class PaperZoneProperty(
                         FireworkEffect.builder().with(FireworkEffect.Type.STAR).withColor(owner.color.color)
                             .build()
                     )
-                    meta.power = 1
+                    meta.power = 0
                 }
             }
             owner.broadcast(this, Component.text("${this.landmarkName} 건설 완료! by ${this.author}"))

@@ -32,6 +32,7 @@ class ZoneProperty : Zone() {
             var tolls = 0
             for (level in levels) {
                 if (!level.condition) break
+
                 tolls += level.tolls
             }
             return tolls
@@ -77,7 +78,7 @@ class ZoneProperty : Zone() {
             val acquisitionCosts = acquisitionCosts
 
             if (piece.balance >= acquisitionCosts) {
-                if (piece.request(GameDialogAcquisition(this), GameMessage.ACQUISITION) { false }) {
+                if (piece.request(GameDialogAcquisition(this, acquisitionCosts), GameMessage.ACQUISITION) { false }) {
                     piece.transfer(tolls, owner, this)
                     this.owner = piece
                 }
@@ -135,6 +136,6 @@ class ZoneProperty : Zone() {
             internal set
 
         val condition: Boolean
-            get() = owner != null && level <= value
+            get() = owner != null && value <= level
     }
 }

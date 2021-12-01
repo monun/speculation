@@ -3,6 +3,7 @@ package io.github.monun.speculation.paper
 import io.github.monun.heartbeat.coroutines.Heartbeat
 import io.github.monun.heartbeat.coroutines.Suspension
 import io.github.monun.speculation.game.Piece
+import io.github.monun.speculation.game.dialog.GameDialogAcquisition
 import io.github.monun.speculation.game.dialog.GameDialogDice
 import io.github.monun.speculation.game.dialog.GameDialogUpgrade
 import io.github.monun.speculation.game.message.GameMessage
@@ -12,6 +13,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.title.Title
 import org.bukkit.util.Vector
@@ -29,6 +31,7 @@ class GameDialogDispatcher {
         process.game.dialogAdapter.apply {
             register(GameDialogDice::class.java, ::dice)
             register(GameDialogUpgrade::class.java, ::upgrade)
+            register(GameDialogAcquisition::class.java, ::acquisition)
         }
     }
 
@@ -135,7 +138,7 @@ class GameDialogDispatcher {
                 return@withContext
             }
 
-            newDialog(upgradeDialog.piece) {
+            newDialog(piece) {
                 val info = when (val value = upgradeDialog.level.value) {
                     0 -> "땅" to "구입"
                     1 -> "빌라" to "건설"
@@ -144,7 +147,6 @@ class GameDialogDispatcher {
                     4 -> "랜드마크" to "건설"
                     else -> error("Unknown property level $value")
                 }
-
                 message {
                     Component.text("부동산을 클릭하여 업그레이드하세요")
                 }
@@ -155,7 +157,7 @@ class GameDialogDispatcher {
                     text.append(Component.text(info.second))
                     text.append(Component.space())
                     text.append(Component.text("비용: "))
-                    text.append(Component.text(level.costs))
+                    text.append(Component.text(level.costs).color(NamedTextColor.DARK_GREEN))
                     text.build()
                 }
                 button(paperProperty.box) {
@@ -177,6 +179,57 @@ class GameDialogDispatcher {
                     }
                 }
                 timeout(Component.text("부동산 업그레이드"), 15L * 1000L) {
+                    channel.trySend(false)
+                }
+            }
+        }
+
+        return channel.receive()
+    }
+
+    private suspend fun acquisition(acqDialog: GameDialogAcquisition): Boolean {
+        val piece = acqDialog.piece
+        val property = acqDialog.property
+
+        val paperPiece = piece.attachment<PaperPiece>()
+        val paperProperty = property.attachment<PaperZoneProperty>()
+        val channel = Channel<Boolean>()
+
+        withContext(Dispatchers.Heartbeat) {
+            if (paperPiece.player == null) {
+                channel.trySend(false)
+                return@withContext
+            }
+
+            newDialog(piece) {
+                message {
+                    Component.text("부동산을 클릭하여 인수하세요")
+                }
+                actionMessage {
+                    val text = Component.text()
+                    text.append(Component.text("인수 비용: "))
+                    text.append(Component.text(acqDialog.costs).color(NamedTextColor.DARK_GREEN))
+                    text.build()
+                }
+                button(paperProperty.box) {
+                    actionMessage {
+                        Component.text("확인")
+                    }
+                    onClick { _, _, _ ->
+                        channel.trySend(true)
+                        disposeCurrentDialog()
+                    }
+                }
+                button(PaperGameConfig.centerBox) {
+                    actionMessage {
+                        Component.text("취소")
+                    }
+                    onClick { _, _, _ ->
+                        channel.trySend(false)
+                        disposeCurrentDialog()
+                    }
+                }
+                timeout(Component.text("부동산 인수"), 10L * 1000L) {
                     channel.trySend(false)
                 }
             }
