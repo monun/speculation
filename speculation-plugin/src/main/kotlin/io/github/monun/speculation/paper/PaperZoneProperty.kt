@@ -7,8 +7,10 @@ import io.github.monun.tap.effect.playFirework
 import io.github.monun.tap.fake.FakeEntity
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
-import net.kyori.adventure.text.format.TextDecoration
-import org.bukkit.*
+import org.bukkit.Color
+import org.bukkit.FireworkEffect
+import org.bukkit.Particle
+import org.bukkit.Sound
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.Firework
 import org.bukkit.entity.ItemFrame
@@ -112,5 +114,14 @@ class PaperZoneProperty(
     fun playClearEffect() {
         val effect = FireworkEffect.builder().with(FireworkEffect.Type.BALL_LARGE).withColor(Color.WHITE).build()
         location.world.playFirework(location, effect, 128.0)
+    }
+
+    fun playSelectionEffect() {
+        val pos = position
+        val widthX = box.widthX
+        val widthZ = box.widthZ
+        val world = process.world
+        world.spawnParticle(Particle.SOUL, pos.x, pos.y, pos.z, 4, widthX / 2.0, 0.0, widthZ / 2.0, 0.0, null, true)
+
     }
 }

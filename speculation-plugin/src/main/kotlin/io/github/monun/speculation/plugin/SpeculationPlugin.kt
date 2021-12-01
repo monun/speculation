@@ -9,7 +9,6 @@ import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 
-// TODO 인수
 // TODO 땅 매각
 // TODO 겜블
 // TODO 감옥

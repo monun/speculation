@@ -24,4 +24,4 @@ abstract class GameDialog<R> {
 class GameDialogDice(val numberOfDice: Int) : GameDialog<List<Int>>()
 class GameDialogAcquisition(val property: ZoneProperty, val costs: Int) : GameDialog<Boolean>()
 class GameDialogUpgrade(val property: ZoneProperty, val level: ZoneProperty.Level) : GameDialog<Boolean>()
-class GameDialogSeizure() : GameDialog<List<ZoneProperty>>()
+class GameDialogSeizure(val requiredAmount: Int) : GameDialog<List<ZoneProperty>>()

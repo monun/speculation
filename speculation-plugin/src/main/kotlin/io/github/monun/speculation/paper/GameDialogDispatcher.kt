@@ -5,8 +5,10 @@ import io.github.monun.heartbeat.coroutines.Suspension
 import io.github.monun.speculation.game.Piece
 import io.github.monun.speculation.game.dialog.GameDialogAcquisition
 import io.github.monun.speculation.game.dialog.GameDialogDice
+import io.github.monun.speculation.game.dialog.GameDialogSeizure
 import io.github.monun.speculation.game.dialog.GameDialogUpgrade
 import io.github.monun.speculation.game.message.GameMessage
+import io.github.monun.speculation.game.zone.ZoneProperty
 import io.github.monun.tap.math.toRadians
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -32,6 +34,7 @@ class GameDialogDispatcher {
             register(GameDialogDice::class.java, ::dice)
             register(GameDialogUpgrade::class.java, ::upgrade)
             register(GameDialogAcquisition::class.java, ::acquisition)
+            register(GameDialogSeizure::class.java, ::seizure)
         }
     }
 
@@ -236,5 +239,106 @@ class GameDialogDispatcher {
         }
 
         return channel.receive()
+    }
+
+    private suspend fun seizure(seizureDialog: GameDialogSeizure): List<ZoneProperty> {
+        val piece = seizureDialog.piece
+        val properties = piece.properties
+
+        val paperPiece = piece.attachment<PaperPiece>()
+        val paperProperties = properties.map { it.attachment<PaperZoneProperty>() }
+
+        val required = seizureDialog.requiredAmount
+
+        return withContext(Dispatchers.Heartbeat) {
+            val defaultSelected = seizureDialog.default()
+            val selected = mutableSetOf<PaperZoneProperty>()
+            var confirm = false
+
+            newDialog(piece) {
+                message {
+                    Component.text("매각할 부동산을 선택하세요")
+                }
+                actionMessage {
+                    val text = Component.text()
+                    text.append(
+                        Component.text(piece.balance + selected.sumOf { it.zone.assets })
+                            .color(NamedTextColor.DARK_GREEN)
+                    )
+                    text.append(Component.text("/"))
+                    text.append(Component.text(required).color(NamedTextColor.DARK_RED))
+                    text.build()
+                }
+
+                for (paperProperty in paperProperties) {
+                    button(paperProperty.box) {
+                        display(
+                            paperProperty.tollsTag.location.apply { y -= 0.25 },
+                            Component.text("매각금액: ${paperProperty.zone.tolls}").color(NamedTextColor.RED)
+                        )
+
+                        actionMessage {
+                            val text = Component.text()
+                            if (paperProperty !in selected) {
+                                text.content("선택 ").append(
+                                    Component.text("+${paperProperty.zone.assets}").color(NamedTextColor.DARK_AQUA)
+                                )
+                            } else {
+                                text.content("선택취소 ")
+                                    .append(Component.text("-${paperProperty.zone.assets}").color(NamedTextColor.RED))
+                            }
+                            text.build()
+                        }
+
+                        onClick { player, dialog, button ->
+                            if (selected.add(paperProperty)) {
+                                if (piece.balance + selected.sumOf { it.zone.assets } >= required) {
+                                    confirm = true
+                                    disposeCurrentDialog()
+                                }
+                            } else {
+                                selected.remove(paperProperty)
+                            }
+                        }
+                    }
+                }
+
+                button(PaperGameConfig.centerBox) {
+                    actionMessage {
+                        Component.text().content("자동선택 ")
+                            .append(
+                                Component.text("+${defaultSelected.sumOf { it.assets }}")
+                                    .color(NamedTextColor.DARK_AQUA)
+                            )
+                            .build()
+
+                    }
+
+                    onClick { player, dialog, button ->
+                        selected.apply {
+                            clear()
+                            addAll(defaultSelected.map { it.attachment() })
+                        }
+                        disposeCurrentDialog()
+                    }
+                }
+
+                timeout(Component.text("강제 매각"), 20L * 1000L) {
+                    selected.apply {
+                        clear()
+                        addAll(defaultSelected.map { it.attachment() })
+                    }
+                    disposeCurrentDialog()
+                }
+            }
+
+            while (isActive && !confirm) {
+                selected.forEach {
+                    it.playSelectionEffect()
+                }
+            }
+
+            selected.map { it.zone }
+        }
     }
 }
