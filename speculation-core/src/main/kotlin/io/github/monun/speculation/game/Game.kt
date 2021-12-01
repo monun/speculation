@@ -39,7 +39,7 @@ class Game {
         // 팀 구성이 a(3) - b(3) - c(3) 일때 무작위 교차배치
         // a b c a b c a b c a b c
         turns = arrayListOf<Piece>().apply {
-            val piecesByTeam = board.pieces.values.groupByTo(linkedMapOf(), Piece::team).values.toMutableList().onEach {
+            val piecesByTeam = board.survivors.groupByTo(linkedMapOf(), Piece::team).values.toMutableList().onEach {
                 it.shuffle()
             }.apply { shuffle() }
             while (piecesByTeam.isNotEmpty()) {
@@ -68,6 +68,8 @@ class Game {
                     if (turnQueue.isEmpty()) turnQueue.addAll(turns.filter { !it.isBankrupt })
 
                     val piece = turnQueue.remove()
+                    if (piece.isBankrupt) continue
+
                     currentTurn = piece
 
                     try {
@@ -86,10 +88,10 @@ class Game {
                         from.onTryLeave(piece, diceResult)
                         piece.moveTo(from.shift(diceResult.sum()), Movement.FORWARD, MovementCause.DICE, piece)
 
-                    } catch (turnOver: TurnOverException) {
+                    }
+                    catch (bankrupt: BankruptException) {}
+                    catch (turnOver: TurnOverException) {
                         eventAdapter.call(PieceTurnOverEvent(turnOver.piece))
-                    } catch (bankrupt: BankruptException) {
-                        eventAdapter.call(PieceBankruptEvent(bankrupt.piece))
                     }
                 }
             } catch (gameOver: GameOverException) {
@@ -104,6 +106,14 @@ class Game {
 
     fun checkState(state: GameState) {
         require(this.state == state) { "state must be ${state.name}" }
+    }
+
+    internal fun checkGameOver() {
+        val pieces = board.pieces
+        val survivors = pieces.filter { !it.isBankrupt }
+
+        if (survivors.isEmpty()) throw GameOverException()
+        if (survivors.count() == 1) throw GameOverException(survivors.first())
     }
 }
 

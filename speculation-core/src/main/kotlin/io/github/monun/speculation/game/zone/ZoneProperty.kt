@@ -77,6 +77,7 @@ class ZoneProperty : Zone() {
             if (owner.isFriendly(piece)) return@let
 
             piece.transfer(tolls, owner, this)
+            piece.ensureAlive()
 
             val acquisitionCosts = acquisitionCosts
 

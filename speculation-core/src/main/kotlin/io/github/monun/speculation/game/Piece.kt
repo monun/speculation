@@ -2,10 +2,7 @@ package io.github.monun.speculation.game
 
 import io.github.monun.speculation.game.dialog.GameDialog
 import io.github.monun.speculation.game.dialog.GameDialogSeizure
-import io.github.monun.speculation.game.event.PieceDepositEvent
-import io.github.monun.speculation.game.event.PieceMoveEvent
-import io.github.monun.speculation.game.event.PieceTransferEvent
-import io.github.monun.speculation.game.event.PieceWithdrawEvent
+import io.github.monun.speculation.game.event.*
 import io.github.monun.speculation.game.exception.BankruptException
 import io.github.monun.speculation.game.message.GameMessage
 import io.github.monun.speculation.game.zone.Zone
@@ -104,37 +101,39 @@ class Piece(board: Board, val name: String, zone: Zone) : Attachable() {
             val total = balance + assets
 
             if (total < requestAmount) {
-                isBankrupt = true
-
                 for (property in properties) {
                     property.clear()
                 }
+                balance = 0
+                isBankrupt = true
+                board.game.eventAdapter.call(PieceBankruptEvent(this))
+                board.game.checkGameOver()
 
-                balance = total
-            } else {
-                val target = requestAmount - balance
+                return total
+            }
 
-                selectProperties(target).let { (required, optional) ->
-                    if (optional.isEmpty()) {
-                        for (property in properties) property.clear()
-                        balance = total
-                    } else {
-                        val selected = request(
-                            GameDialogSeizure(requestAmount),
-                            GameMessage.SEIZURE
-                        ) { required }.filter { it.owner == this }
+            val target = requestAmount - balance
 
-                        for (zone in selected) {
+            selectProperties(target).let { (required, optional) ->
+                if (optional.isEmpty()) {
+                    for (property in properties) property.clear()
+                    balance = total
+                } else {
+                    val selected = request(
+                        GameDialogSeizure(requestAmount),
+                        GameMessage.SEIZURE
+                    ) { required }.filter { it.owner == this }
+
+                    for (zone in selected) {
+                        balance += zone.assets
+                        zone.clear()
+                    }
+
+                    // 부족한 금액 메꾸기
+                    if (balance < requestAmount) {
+                        for (zone in selectProperties(requestAmount - balance).first) {
                             balance += zone.assets
                             zone.clear()
-                        }
-
-                        // 부족한 금액 메꾸기
-                        if (balance < requestAmount) {
-                            for (zone in selectProperties(requestAmount - balance).first) {
-                                balance += zone.assets
-                                zone.clear()
-                            }
                         }
                     }
                 }
@@ -147,23 +146,23 @@ class Piece(board: Board, val name: String, zone: Zone) : Attachable() {
     internal suspend fun withdraw(requestAmount: Int, source: Zone): Int {
         val amount = withdraw(requestAmount)
 
-        board.game.eventAdapter.call(PieceWithdrawEvent(this, amount, source))
+        if (amount > 0) board.game.eventAdapter.call(PieceWithdrawEvent(this, amount, source))
 
         return amount
     }
 
     internal suspend fun transfer(requestAmount: Int, receiver: Piece, zone: Zone): Int {
         val amount = withdraw(requestAmount)
-        receiver.balance += amount
 
-        board.game.eventAdapter.call(PieceTransferEvent(this, amount, receiver, zone))
+        if (amount > 0) {
+            receiver.balance += amount
+            board.game.eventAdapter.call(PieceTransferEvent(this, amount, receiver, zone))
+        }
 
         return amount
     }
 
-    private fun ensureAlive() {
+    fun ensureAlive() {
         if (isBankrupt) throw BankruptException(this)
     }
-
-
 }

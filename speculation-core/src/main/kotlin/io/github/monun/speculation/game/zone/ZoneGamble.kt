@@ -18,15 +18,15 @@ class ZoneGamble : Zone() {
 
         if (betting > 0) {
             betting = min(betting, piece.balance)
-            val pieces = piece.board.pieces.values.toMutableList().apply {
+            val gamblers = piece.board.survivors.toMutableList().apply {
                 shuffle()
                 remove(piece)
                 add(0, piece)
             }
 
-            board.game.eventAdapter.call(PieceGambleStartEvent(piece, betting, pieces))
+            board.game.eventAdapter.call(PieceGambleStartEvent(piece, betting, gamblers))
 
-            val results = pieces.associateWith { gambler ->
+            val results = gamblers.associateWith { gambler ->
                 gambler.request(GameDialogDice(3), GameMessage.ROLL_THE_DICE_FOR_GAMBLE) { List(3) { 1 } }.sum()
             }
 

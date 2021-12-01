@@ -324,7 +324,7 @@ class PaperGameProcess(
     }
 
     private fun registerTeams() {
-        val pieces: List<PaperPiece> = game.board.pieces.values.map { it.attachment() }
+        val pieces: List<PaperPiece> = game.board.pieces.map { it.attachment() }
         val groups = pieces.groupBy { it.color.group }
 
         for ((group, piecesByGroup) in groups) {

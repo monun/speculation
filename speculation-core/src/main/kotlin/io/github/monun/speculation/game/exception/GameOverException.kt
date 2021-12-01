@@ -1,4 +1,6 @@
 package io.github.monun.speculation.game.exception
 
-class GameOverException: Exception() {
+import io.github.monun.speculation.game.Piece
+
+class GameOverException(val winner: Piece? = null): Exception() {
 }

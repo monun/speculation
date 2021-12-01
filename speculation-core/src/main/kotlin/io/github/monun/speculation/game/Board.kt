@@ -100,8 +100,11 @@ class Board(game: Game) {
 
     private val _pieces = LinkedHashMap<String, Piece>()
 
-    val pieces: Map<String, Piece>
-        get() = _pieces
+    val pieces: List<Piece>
+        get() = _pieces.values.toList()
+
+    val survivors: List<Piece>
+        get() = _pieces.values.filter { !it.isBankrupt }
 
     private val _teams = LinkedHashMap<String, PieceTeam>()
 
