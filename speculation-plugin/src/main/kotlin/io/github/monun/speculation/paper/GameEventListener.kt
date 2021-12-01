@@ -37,26 +37,28 @@ class GameEventListener(private val process: PaperGameProcess) {
             register(PropertyClearEvent::class.java, ::onPropertyClear)
             register(PieceGambleStartEvent::class.java, ::onPieceGambleStart)
             register(PieceGambleEndEvent::class.java, ::onPieceGambleEnd)
+            register(PieceLeaveEvent::class.java, ::onPieceLeave)
+            register(PieceArriveEvent::class.java, ::onPieceArrive)
         }
     }
 
     private suspend fun onPieceMove(event: PieceMoveEvent) {
         val piece = event.piece
-        val zone = event.to
+        val zoneTo = event.to
 
         val journey = event.journey
 
         val paperPiece = piece.attachment<PaperPiece>()
-        val paperZone = zone.attachment<PaperZone>()
+        val paperZoneTo = zoneTo.attachment<PaperZone>()
 
         withContext(Dispatchers.Heartbeat) {
             val from = paperPiece.stand.location
-            val to = paperZone.nextLocation()
+            val to = paperZoneTo.nextPieceLocation()
             val distance = from.distance(to)
             var ticks = (distance * 1.5).toInt()
             if (distance < 8.0)
                 ticks = 5
-            if (journey.cause == MovementCause.PORTAL) ticks = ticks.shr(1)
+            if (journey.cause != MovementCause.DICE) ticks = ticks.shr(1)
 
             val vector = to.clone().subtract(from).toVector()
             val sus = Suspension()
@@ -72,6 +74,28 @@ class GameEventListener(private val process: PaperGameProcess) {
                 paperPiece.stand.moveTo(location)
             }
             paperPiece.playStepSound()
+
+            if (zoneTo != journey.destination) {
+                paperZoneTo.playPassEffect()
+            }
+        }
+    }
+
+    private suspend fun onPieceLeave(event: PieceLeaveEvent) {
+        val zone = event.destination
+        val paperZone = zone.attachment<PaperZone>()
+
+        withContext(Dispatchers.Heartbeat) {
+            paperZone.playLeaveEffect()
+        }
+    }
+
+    private suspend fun onPieceArrive(event: PieceArriveEvent) {
+        val zone = event.from
+        val paperZone = zone.attachment<PaperZone>()
+
+        withContext(Dispatchers.Heartbeat) {
+            paperZone.playArriveEffect()
         }
     }
 

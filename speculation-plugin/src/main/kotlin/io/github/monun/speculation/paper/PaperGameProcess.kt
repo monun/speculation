@@ -285,7 +285,7 @@ class PaperGameProcess(
                 PaperPiece(this, piece, pieceColor, player).apply {
                     val zone = piece.zone.attachment<PaperZone>()
                     bukkitScore = objective.getScore(player.name).apply { score = piece.balance }
-                    stand = fakeEntityServer.spawnEntity(zone.nextLocation(), ArmorStand::class.java).apply {
+                    stand = fakeEntityServer.spawnEntity(zone.nextPieceLocation(), ArmorStand::class.java).apply {
                         updateMetadata<ArmorStand> {
                             setBasePlate(false)
                             customName(Component.text(player.name))

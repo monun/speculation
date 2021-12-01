@@ -42,15 +42,21 @@ abstract class PaperZone {
     val location: Location
         get() = position.toLocation(process.world)
 
-    fun nextLocation() = location.apply {
+    fun nextPieceLocation() = location.apply {
         val wiggle = 1.0
         val half = wiggle / 2.0
         x += Random.nextDouble(wiggle) - half
         z += Random.nextDouble(wiggle) - half
     }
 
-    open fun playArriveEffect() = Unit
-    open fun playLeaveEffect() = Unit
+    fun nextLocation() = box.min.apply { y = box.maxY }.apply {
+        x += Random.nextDouble(box.widthX)
+        z += Random.nextDouble(box.widthZ)
+    }.toLocation(process.world)
+
+    open suspend fun playPassEffect() = Unit
+    open suspend fun playArriveEffect() = Unit
+    open suspend fun playLeaveEffect() = Unit
 
     abstract fun destroy()
 }

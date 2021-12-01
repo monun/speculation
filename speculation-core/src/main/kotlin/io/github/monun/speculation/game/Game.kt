@@ -4,7 +4,6 @@ import io.github.monun.speculation.game.dialog.GameDialogAdapter
 import io.github.monun.speculation.game.dialog.GameDialogDice
 import io.github.monun.speculation.game.event.GameEventAdapter
 import io.github.monun.speculation.game.event.GameOverEvent
-import io.github.monun.speculation.game.event.PieceBankruptEvent
 import io.github.monun.speculation.game.event.PieceTurnOverEvent
 import io.github.monun.speculation.game.exception.BankruptException
 import io.github.monun.speculation.game.exception.GameOverException
@@ -89,7 +88,7 @@ class Game {
 //                        piece.moveTo(from.shift(diceResult.sum()), Movement.FORWARD, MovementCause.DICE, piece)
 
                         // ======================================= 디버그: 겜블 =======================================
-                        piece.moveTo(board.zoneSpecials[1], Movement.FORWARD, MovementCause.DICE, piece) // debug
+                        piece.moveTo(board.zoneSpecials[4], Movement.TELEPORT, MovementCause.MAGIC, piece) // debug
                         // ======================================= 디버그: 겜블 =======================================
 
                     }

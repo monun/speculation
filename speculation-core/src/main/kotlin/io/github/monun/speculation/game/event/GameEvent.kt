@@ -15,8 +15,11 @@ class PieceTransferEvent(piece: Piece, val amount: Int, val receiver: Piece, val
 class PieceWithdrawEvent(piece: Piece, val amount: Int, val zone: Zone): PieceEvent(piece)
 class PieceBankruptEvent(piece: Piece) : PieceEvent(piece)
 class PieceMoveEvent(piece: Piece, val journey: Journey, val from: Zone, val to: Zone): PieceEvent(piece)
+class PieceLeaveEvent(piece: Piece, val journey: Journey, val destination: Zone): PieceEvent(piece)
+class PieceArriveEvent(piece: Piece, val journey: Journey, val from: Zone): PieceEvent(piece)
 class PieceGambleStartEvent(piece: Piece, val betting: Int, val turns: List<Piece>): PieceEvent(piece)
 class PieceGambleEndEvent(val winners: List<Piece>, val losers: List<Piece>, val prizePerWinner: Int): GameEvent
+
 
 abstract class PropertyEvent(val property: ZoneProperty): GameEvent
 //class PropertyUpdateEvent(property: ZoneProperty) : PropertyEvent(property)

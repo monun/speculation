@@ -54,7 +54,11 @@ class Piece(board: Board, val name: String, zone: Zone) : Attachable() {
             pathfinding()
         }
 
+        val eventAdapter = board.game.eventAdapter
+
         journey.from.onLeave(journey)
+        eventAdapter.call(PieceLeaveEvent(this, journey, zone))
+
         var prev = journey.from
 
         for (zone in journey.path) {
@@ -66,7 +70,8 @@ class Piece(board: Board, val name: String, zone: Zone) : Attachable() {
         }
 
         zone = journey.destination
-        board.game.eventAdapter.call(PieceMoveEvent(this, journey, prev, zone))
+        eventAdapter.call(PieceMoveEvent(this, journey, prev, zone))
+        eventAdapter.call(PieceArriveEvent(this, journey, zone))
         zone.onArrive(journey)
     }
 

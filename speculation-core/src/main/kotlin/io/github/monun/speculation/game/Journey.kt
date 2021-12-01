@@ -22,15 +22,20 @@ class Journey(
 
     internal suspend fun pathfinding() {
         val path = arrayListOf<Zone>()
-        var zone = from.shift(movement)
 
-        while (zone != destination) {
-            if (!zone.navigate(this)) {
-                destination = zone
-                break
+        if (movement == Movement.TELEPORT) {
+
+        } else {
+            var zone = from.shift(movement)
+
+            while (zone != destination) {
+                if (!zone.navigate(this)) {
+                    destination = zone
+                    break
+                }
+                path += zone
+                zone = zone.shift(movement)
             }
-            path += zone
-            zone = zone.shift(movement)
         }
         this.path = path.toList()
     }
