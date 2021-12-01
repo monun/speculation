@@ -88,14 +88,18 @@ class ZoneProperty : Zone() {
         val owner = owner
 
         if (owner == null || owner.isFriendly(piece)) {
+            val preLevel = level
+
             for (level in levels) {
-                if (level.condition) continue
-                if (level.value > piece.level) break
+                if (level.condition) continue // 이미 지어져 있다면 다음으로
+                if (level.value > piece.level) break // 말의 레벨이 레벨의 값보다 작을때 종료 (주회)
+                if (level == levelLandmark && preLevel != levelHotel.value) break // 랜드마크 업그레이트 루틴 시작시 레벨이 호텔이 아니라면 종료
 
                 val costs = level.costs
-                if (costs > piece.balance || !piece.request(GameDialogUpgrade(this, level), GameMessage.UPGRADE) {
-                        false
-                    }
+                if (costs > piece.balance || !piece.request(
+                        GameDialogUpgrade(this, level),
+                        GameMessage.UPGRADE
+                    ) { false }
                 ) {
                     break
                 }
