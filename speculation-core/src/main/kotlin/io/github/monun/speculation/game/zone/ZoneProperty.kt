@@ -110,13 +110,16 @@ class ZoneProperty : Zone() {
                 }
 
                 piece.withdraw(tolls, this)
-
-                if (this.owner == null) this.owner = piece
-                this.level = level.value
-
-                board.game.eventAdapter.call(PropertyUpgradeEvent(this@ZoneProperty, level, piece))
+                upgrade(owner ?: piece, piece, level.value)
             }
         }
+    }
+
+    suspend fun upgrade(owner: Piece, piece: Piece, level: Int) {
+        this.owner = owner
+        this.level = level
+
+        board.game.eventAdapter.call(PropertyUpgradeEvent(this@ZoneProperty, levels[level], owner, piece))
     }
 
     suspend fun clear() {

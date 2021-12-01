@@ -69,13 +69,13 @@ class GameEventListener(private val process: PaperGameProcess) {
 
     private suspend fun onPropertyUpgrade(event: PropertyUpgradeEvent) {
         val property = event.property
-        val piece = event.piece
+        val owner = event.owner
 
         val paperProperty = property.attachment<PaperZoneProperty>()
-        val paperPiece = piece.attachment<PaperPiece>()
+        val paperOwner = owner.attachment<PaperPiece>()
 
         withContext(Dispatchers.Heartbeat) {
-            paperProperty.playUpgradeEffect(paperPiece, event.level)
+            paperProperty.playUpgradeEffect(paperOwner, event.level)
             paperProperty.updateSlots()
             paperProperty.updateTolls()
         }
@@ -176,6 +176,8 @@ class GameEventListener(private val process: PaperGameProcess) {
         val paperReceiver = receiver.attachment<PaperPiece>()
 
         withContext(Dispatchers.Heartbeat) {
+            paperPiece.updateScore(piece.balance)
+
             val location = paperPiece.stand.location.apply { y += 1.0 }
             location.playSound(Sound.BLOCK_CHAIN_PLACE, 0.1F)
 
@@ -192,12 +194,12 @@ class GameEventListener(private val process: PaperGameProcess) {
 
             val standId = paperReceiver.stand.bukkitEntity.entityId
             val standLoc = paperReceiver.stand.location
-            val prevScore = paperPiece.score
+            val prevScore = paperReceiver.score
             emeralds.forEachIndexed { index, emerald ->
                 emerald.broadcastImmediately(PacketSupport.takeItem(emerald.bukkitEntity.entityId, standId, 1))
                 standLoc.playSound(Sound.ENTITY_ITEM_PICKUP, 1.0F)
                 emerald.remove()
-                paperPiece.score = prevScore + amount * (index + 1) / count
+                paperReceiver.score = prevScore + amount * (index + 1) / count
                 delay(1L) // 1 tick
             }
         }

@@ -15,6 +15,7 @@ import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.Firework
 import org.bukkit.entity.ItemFrame
 import org.bukkit.inventory.ItemStack
+import kotlin.random.Random
 
 class PaperZoneProperty(
     override val zone: ZoneProperty
@@ -116,12 +117,31 @@ class PaperZoneProperty(
         location.world.playFirework(location, effect, 128.0)
     }
 
-    fun playSelectionEffect() {
-        val pos = position
+    fun playSelectionEffect(selected: Boolean) {
+        val pos = box.min.apply { y = box.maxY + 0.2 }
         val widthX = box.widthX
         val widthZ = box.widthZ
         val world = process.world
-        world.spawnParticle(Particle.SOUL, pos.x, pos.y, pos.z, 4, widthX / 2.0, 0.0, widthZ / 2.0, 0.0, null, true)
+        val particle = if (selected) {
+            Particle.SOUL
+        } else {
+            Particle.FLAME
+        }
 
+        repeat(4) {
+            world.spawnParticle(
+                particle,
+                pos.x + Random.nextDouble() * widthX,
+                pos.y,
+                pos.z + Random.nextDouble() * widthZ,
+                1,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                null,
+                true
+            )
+        }
     }
 }

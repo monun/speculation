@@ -166,7 +166,7 @@ class GameDialogDispatcher {
                 }
                 button(paperProperty.box) {
                     actionMessage {
-                        Component.text("확인")
+                        Component.text("확인").color(NamedTextColor.DARK_AQUA)
                     }
                     onClick { _, _, _ ->
                         channel.trySend(true)
@@ -175,7 +175,7 @@ class GameDialogDispatcher {
                 }
                 button(PaperGameConfig.centerBox) {
                     actionMessage {
-                        Component.text("취소")
+                        Component.text("취소").color(NamedTextColor.RED)
                     }
                     onClick { _, _, _ ->
                         channel.trySend(false)
@@ -246,7 +246,6 @@ class GameDialogDispatcher {
         val piece = seizureDialog.piece
         val properties = piece.properties
 
-        val paperPiece = piece.attachment<PaperPiece>()
         val paperProperties = properties.map { it.attachment<PaperZoneProperty>() }
 
         val required = seizureDialog.requiredAmount
@@ -262,6 +261,7 @@ class GameDialogDispatcher {
                 }
                 actionMessage {
                     val text = Component.text()
+                    text.append(Component.text("필요금액 "))
                     text.append(
                         Component.text(piece.balance + selected.sumOf { it.zone.assets })
                             .color(NamedTextColor.DARK_GREEN)
@@ -275,23 +275,26 @@ class GameDialogDispatcher {
                     button(paperProperty.box) {
                         display(
                             paperProperty.tollsTag.location.apply { y -= 0.25 },
-                            Component.text("매각금액: ${paperProperty.zone.tolls}").color(NamedTextColor.RED)
+                            Component.text("매각금액: ${paperProperty.zone.assets}").color(NamedTextColor.RED)
                         )
 
                         actionMessage {
                             val text = Component.text()
+                            text.content(paperProperty.name)
+
                             if (paperProperty !in selected) {
-                                text.content("선택 ").append(
-                                    Component.text("+${paperProperty.zone.assets}").color(NamedTextColor.DARK_AQUA)
-                                )
+                                text.append(Component.text(" 선택 "))
+                                    .append(
+                                        Component.text("+${paperProperty.zone.assets}").color(NamedTextColor.DARK_AQUA)
+                                    )
                             } else {
-                                text.content("선택취소 ")
+                                text.append(Component.text(" 선택취소 "))
                                     .append(Component.text("-${paperProperty.zone.assets}").color(NamedTextColor.RED))
                             }
                             text.build()
                         }
 
-                        onClick { player, dialog, button ->
+                        onClick { _, _, _ ->
                             if (selected.add(paperProperty)) {
                                 if (piece.balance + selected.sumOf { it.zone.assets } >= required) {
                                     confirm = true
@@ -306,36 +309,44 @@ class GameDialogDispatcher {
 
                 button(PaperGameConfig.centerBox) {
                     actionMessage {
-                        Component.text().content("자동선택 ")
+                        val listString = buildString {
+                            defaultSelected.forEach {
+                                if (isNotEmpty()) append(", ")
+                                append(it.attachment<PaperZoneProperty>().name)
+                            }
+                        }
+
+                        Component.text().content("자동선택($listString) ")
                             .append(
                                 Component.text("+${defaultSelected.sumOf { it.assets }}")
                                     .color(NamedTextColor.DARK_AQUA)
                             )
                             .build()
-
                     }
 
-                    onClick { player, dialog, button ->
+                    onClick { _, _, _ ->
                         selected.apply {
                             clear()
                             addAll(defaultSelected.map { it.attachment() })
                         }
+                        confirm = true
                         disposeCurrentDialog()
                     }
                 }
 
-                timeout(Component.text("강제 매각"), 20L * 1000L) {
+                timeout(Component.text("강제 매각"), 60L * 1000L) {
                     selected.apply {
                         clear()
                         addAll(defaultSelected.map { it.attachment() })
                     }
+                    confirm = true
                     disposeCurrentDialog()
                 }
             }
 
             while (isActive && !confirm) {
-                selected.forEach {
-                    it.playSelectionEffect()
+                paperProperties.forEach {
+                    it.playSelectionEffect(it in selected)
                 }
                 delay(1L)
             }

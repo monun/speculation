@@ -52,6 +52,16 @@ class Game {
         turnQueue = ArrayDeque()
 
         scope.launch(dispatcher) {
+            // debug
+            val pieces = board.pieces.values
+            board.zoneProperties.forEach {
+                pieces.random().let { piece ->
+                        it.upgrade(piece, piece, 4)
+                }
+            }
+            pieces.forEach { it.withdraw(400, board.zones.first()) }
+            // debug end
+
             try {
                 while (isActive) {
                     if (turnQueue.isEmpty()) turnQueue.addAll(turns.filter { !it.isBankrupt })
