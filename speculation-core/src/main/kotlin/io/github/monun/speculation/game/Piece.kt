@@ -36,6 +36,8 @@ class Piece(board: Board, val name: String, zone: Zone) : Attachable() {
 
     var level = 0
 
+    var jailCount = 0
+
     fun isFriendly(piece: Piece): Boolean {
         if (piece === this) return true
 

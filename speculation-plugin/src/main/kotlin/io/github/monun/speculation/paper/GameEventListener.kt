@@ -4,6 +4,7 @@ import io.github.monun.heartbeat.coroutines.Heartbeat
 import io.github.monun.heartbeat.coroutines.Suspension
 import io.github.monun.speculation.game.MovementCause
 import io.github.monun.speculation.game.event.*
+import io.github.monun.speculation.game.zone.ZoneJail
 import io.github.monun.speculation.paper.util.playSound
 import io.github.monun.tap.protocol.PacketSupport
 import kotlinx.coroutines.Dispatchers
@@ -39,6 +40,8 @@ class GameEventListener(private val process: PaperGameProcess) {
             register(PieceGambleEndEvent::class.java, ::onPieceGambleEnd)
             register(PieceLeaveEvent::class.java, ::onPieceLeave)
             register(PieceArriveEvent::class.java, ::onPieceArrive)
+            register(PieceTakeTurnEvent::class.java, ::onPieceTakeTurn)
+            register(PieceJailbreakEvent::class.java, ::onPieceTryEscape)
         }
     }
 
@@ -321,5 +324,74 @@ class GameEventListener(private val process: PaperGameProcess) {
             }
         }
         delay(2500L)
+    }
+
+    private suspend fun onPieceTakeTurn(event: PieceTakeTurnEvent) {
+        val piece = event.piece
+        val zone = piece.zone
+
+        val paperPiece = piece.attachment<PaperPiece>()
+
+        withContext(Dispatchers.Heartbeat) {
+            val titleText = paperPiece.name.append(Component.text("의 차례"))
+            var subtitleText = Component.empty()
+
+            if (zone is ZoneJail) {
+                val jailCount = piece.jailCount
+
+                if (jailCount > 0) {
+                    subtitleText = Component.text("남은 감옥 턴: $jailCount")
+                }
+            }
+
+            Bukkit.getServer().showTitle(
+                Title.title(
+                    titleText,
+                    subtitleText,
+                    Title.Times.of(
+                        Duration.ofMillis(250),
+                        Duration.ofSeconds(1),
+                        Duration.ofMillis(250)
+                    )
+                )
+            )
+        }
+
+        delay(1500L)
+    }
+
+    private suspend fun onPieceTryEscape(event: PieceJailbreakEvent) {
+        val piece = event.piece
+        val success = event.success
+
+        withContext(Dispatchers.Heartbeat) {
+            if (success) {
+                Bukkit.getServer().showTitle(
+                    Title.title(
+                        Component.text("탈출 성공!").color(NamedTextColor.AQUA),
+                        Component.empty(),
+                        Title.Times.of(
+                            Duration.ofMillis(0),
+                            Duration.ofSeconds(1),
+                            Duration.ofMillis(250)
+                        )
+                    )
+                )
+            } else {
+                Bukkit.getServer().showTitle(
+                    Title.title(
+                        Component.text("탈출 실패").color(NamedTextColor.RED),
+                        Component.text("${piece.jailCount} / ${ZoneJail.count}"),
+                        Title.Times.of(
+                            Duration.ofMillis(0),
+                            Duration.ofSeconds(1),
+                            Duration.ofMillis(250)
+                        )
+                    )
+                )
+            }
+        }
+
+        delay(1250L)
     }
 }

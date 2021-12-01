@@ -4,6 +4,7 @@ import io.github.monun.speculation.game.dialog.GameDialogAdapter
 import io.github.monun.speculation.game.dialog.GameDialogDice
 import io.github.monun.speculation.game.event.GameEventAdapter
 import io.github.monun.speculation.game.event.GameOverEvent
+import io.github.monun.speculation.game.event.PieceTakeTurnEvent
 import io.github.monun.speculation.game.event.PieceTurnOverEvent
 import io.github.monun.speculation.game.exception.BankruptException
 import io.github.monun.speculation.game.exception.GameOverException
@@ -62,6 +63,13 @@ class Game {
 //            pieces.forEach { it.zone = board.zones.last() }
             // ======================================= debug end =======================================
 
+
+            // ======================================= 디버그 시작 =======================================
+            board.pieces.forEach {
+                it.moveTo(board.zoneSpecials[2], Movement.TELEPORT, MovementCause.MAGIC, it) // debug
+            }
+            // ======================================= 디버그 끝 =======================================
+
             try {
                 while (isActive) {
                     if (turnQueue.isEmpty()) turnQueue.addAll(turns.filter { !it.isBankrupt })
@@ -74,7 +82,9 @@ class Game {
                     try {
                         val from = piece.zone
 
+                        eventAdapter.call(PieceTakeTurnEvent(piece))
                         from.onTakeTurn(piece)
+
                         val diceResult = piece.request(
                             GameDialogDice(2),
                             GameMessage.ROLL_THE_DICE
@@ -85,16 +95,11 @@ class Game {
                         }
 
                         from.onTryLeave(piece, diceResult)
-//                        piece.moveTo(from.shift(diceResult.sum()), Movement.FORWARD, MovementCause.DICE, piece)
-
-                        // ======================================= 디버그: 겜블 =======================================
-                        piece.moveTo(board.zoneSpecials[4], Movement.TELEPORT, MovementCause.MAGIC, piece) // debug
-                        // ======================================= 디버그: 겜블 =======================================
-
+                        piece.moveTo(from.shift(diceResult.sum()), Movement.FORWARD, MovementCause.DICE, piece)
                     }
                     catch (bankrupt: BankruptException) {}
                     catch (turnOver: TurnOverException) {
-                        eventAdapter.call(PieceTurnOverEvent(turnOver.piece))
+                        eventAdapter.call(PieceTurnOverEvent(piece))
                     }
                 }
             } catch (gameOver: GameOverException) {
