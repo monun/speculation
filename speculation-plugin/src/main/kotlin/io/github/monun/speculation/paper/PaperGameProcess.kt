@@ -316,6 +316,7 @@ class PaperGameProcess(
                             customName(Component.text(player.name))
                             isCustomNameVisible = true
                             isSmall = true
+                            setArms(true)
                         }
 
                         updateEquipment {
