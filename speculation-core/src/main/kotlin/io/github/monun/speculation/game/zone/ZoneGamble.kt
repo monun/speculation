@@ -38,6 +38,13 @@ class ZoneGamble : Zone() {
             val winners = results.filter { it.value == maxValue }
             val losers = results.filter { it.key !in winners }
 
+            board.game.eventAdapter.call(
+                PieceGambleEndEvent(
+                    winners.keys.toList(),
+                    losers.keys.toList()
+                )
+            )
+
             var totalPrize = 0
 
             for (loser in losers.keys) {
@@ -45,14 +52,6 @@ class ZoneGamble : Zone() {
             }
 
             val prizePerWinner = max(1, totalPrize / winners.count())
-
-            board.game.eventAdapter.call(
-                PieceGambleEndEvent(
-                    winners.keys.toList(),
-                    losers.keys.toList(),
-                    prizePerWinner
-                )
-            )
 
             for (winner in winners.keys) {
                 winner.deposit(prizePerWinner, this)

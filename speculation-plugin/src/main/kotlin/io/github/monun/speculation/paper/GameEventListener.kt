@@ -314,7 +314,6 @@ class GameEventListener(private val process: PaperGameProcess) {
     }
 
     private suspend fun onPieceGambleEnd(event: PieceGambleEndEvent) {
-        val prize = event.prizePerWinner
         val winners = event.winners
         val losers = event.losers
 
@@ -340,12 +339,12 @@ class GameEventListener(private val process: PaperGameProcess) {
         )
 
         val titleForWinner = Title.title(
-            Component.text("성공! +$prize").color(NamedTextColor.GOLD),
+            Component.text("성공!").color(NamedTextColor.GOLD),
             subtitleText,
             times
         )
         val titleForLoser = Title.title(
-            Component.text("실패! +$prize").color(NamedTextColor.RED),
+            Component.text("실패!").color(NamedTextColor.RED),
             subtitleText,
             times
         )
