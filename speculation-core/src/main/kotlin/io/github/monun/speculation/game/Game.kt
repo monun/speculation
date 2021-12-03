@@ -88,10 +88,10 @@ class Game {
                         piece.numberOfDice = 2
 
                         piece.zone.onTryLeave(piece, diceResult)
-//                        piece.moveTo(piece.zone.shift(diceResult.sum()), Movement.FORWARD, MovementCause.DICE, piece)
+                        piece.moveTo(piece.zone.shift(diceResult.sum()), Movement.FORWARD, MovementCause.DICE, piece)
 
                         // ======================================= 디버그 시작 =======================================
-                         piece.moveTo(board.zoneMagicA, Movement.TELEPORT, MovementCause.DICE, piece)
+                        // piece.moveTo(board.zoneMagicA, Movement.TELEPORT, MovementCause.DICE, piece)
                         // ======================================= 디버그 끝 =======================================
                     }
                     catch (bankrupt: BankruptException) {}

@@ -84,11 +84,14 @@ class GameDialogDispatcher {
             val location =
                 paperPiece.player?.location?.apply { y += 2.5 } ?: PaperGameConfig.center.toLocation(process.world)
             val numberOfDice = diceDialog.numberOfDice
+            val offset = Vector(0.0, 2.5, 0.0).apply {
+                if (diceDialog.numberOfDice > 1) x = 2.5
+            }
             val dices = List(diceDialog.numberOfDice) {
                 process.spawnDice(
                     location,
                     paperPiece,
-                    Vector(2.0, 2.5, 0.0).rotateAroundY((360.0 / numberOfDice).toRadians() * it)
+                    offset.clone().rotateAroundY((360.0 / numberOfDice).toRadians() * it)
                 )
             }
 
@@ -130,7 +133,7 @@ class GameDialogDispatcher {
             dices.forEach { it.remove(60) }
 
             val title = Component.text()
-            if (dices.count() > 0 && dices.all { it.value == dices.first().value } && diceDialog.message == GameMessage.ROLL_THE_DICE) {
+            if (dices.count() > 1 && dices.all { it.value == dices.first().value } && diceDialog.message == GameMessage.ROLL_THE_DICE) {
                 title.append(Component.text("더블! ").decorate(TextDecoration.BOLD))
             }
             dices.forEachIndexed { index, dice ->
@@ -439,7 +442,7 @@ class GameDialogDispatcher {
                     Magic.Punishment -> "천벌" to "감옥에 있는 대상을 자신의 부동산으로 소환"
                     Magic.Push -> "밀치기" to "지정한 대상을 뒤로 한칸 이동"
                     Magic.QuadrupleDice -> "쿼드러플 주사위" to "다음 주사위는 4개"
-                    Magic.SingleDice -> "트리플 주사위" to "다음 주사위는 1개"
+                    Magic.SingleDice -> "싱글 주사위" to "다음 주사위는 1개"
                     Magic.Storm -> "폭풍우" to "무작위 땅으로 즉시 이동"
                     Magic.TripleDice -> "트리플 주사위" to "다음 주사위는 3개"
                 }

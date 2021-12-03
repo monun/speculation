@@ -1,10 +1,12 @@
 package io.github.monun.speculation.paper
 
+import io.github.monun.speculation.paper.util.playSound
 import io.github.monun.tap.fake.FakeEntity
 import io.github.monun.tap.fake.FakeEntityServer
 import io.github.monun.tap.math.toRadians
 import org.bukkit.Location
 import org.bukkit.Material
+import org.bukkit.Sound
 import org.bukkit.entity.ArmorStand
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.EulerAngle
@@ -119,6 +121,8 @@ class Dice(fakeEntityServer: FakeEntityServer, loc: Location) {
                             velocity.multiply(0.4 + Random.nextDouble() * 0.2)
                             velocity.y *= -1.0
                             rotationSpeed *= 0.8
+
+                            location.playSound(Sound.BLOCK_WOOD_STEP, 1.0F)
                         }
                     } else {
                         state = stateOnGround
