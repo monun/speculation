@@ -180,15 +180,17 @@ class ZoneProperty : Zone() {
         levelLandmark.init(baseTolls * 2 + baseTolls / 2)
     }
 
-    suspend fun update(info: Pair<Piece, Int>? = owner?.to(level)) {
-        if (info == null) {
+    suspend fun update(new: Pair<Piece, Int>? = owner?.to(level)) {
+        val old = owner?.let { it to level }
+
+        if (new == null) {
             this.owner = null
             this.level = 0
         } else {
-            this.owner = info.first
-            this.level = info.second
+            this.owner = new.first
+            this.level = new.second
         }
-        board.game.eventAdapter.call(PropertyUpdateEvent(this))
+        board.game.eventAdapter.call(PropertyUpdateEvent(this, old, new))
     }
 
     inner class Level(val value: Int) {

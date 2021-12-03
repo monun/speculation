@@ -6,7 +6,9 @@ import io.github.monun.speculation.game.MovementCause
 import io.github.monun.speculation.game.event.*
 import io.github.monun.speculation.game.zone.ZoneFestival
 import io.github.monun.speculation.game.zone.ZoneJail
+import io.github.monun.speculation.paper.util.broadcast
 import io.github.monun.speculation.paper.util.playSound
+import io.github.monun.tap.effect.playFirework
 import io.github.monun.tap.protocol.PacketSupport
 import io.github.monun.tap.trail.TrailSupport
 import kotlinx.coroutines.Dispatchers
@@ -131,6 +133,21 @@ class GameEventListener(private val process: PaperGameProcess) {
         withContext(Dispatchers.Heartbeat) {
             paperProperty.updateSlots()
             paperProperty.updateTolls()
+
+            event.oldInfo?.let { (oldOwner, _) ->
+                event.newInfo?.let { (newOwner, _) ->
+                    val paperNewOwner = newOwner.attachment<PaperPiece>()
+
+                    oldOwner.attachment<PaperPiece>().broadcast(paperProperty, Component.text().also { text ->
+                        text.append(Component.text("소유주 변경 -> "))
+                        text.append(newOwner.attachment<PaperPiece>().name)
+                    }.build())
+                    paperProperty.location.run {
+                        val effect = FireworkEffect.builder().with(FireworkEffect.Type.BALL_LARGE).withColor(paperNewOwner.color.color).build()
+                        world.playFirework(this, effect)
+                    }
+                }
+            }
         }
     }
 

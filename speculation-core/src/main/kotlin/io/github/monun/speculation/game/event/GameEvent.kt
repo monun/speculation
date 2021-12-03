@@ -22,7 +22,7 @@ class PieceGambleEndEvent(val winners: List<Piece>, val losers: List<Piece>): Ga
 class PieceJailbreakEvent(piece: Piece, val remaining: Int, val success: Boolean): PieceEvent(piece)
 
 abstract class PropertyEvent(val property: ZoneProperty): GameEvent
-class PropertyUpdateEvent(property: ZoneProperty) : PropertyEvent(property)
+class PropertyUpdateEvent(property: ZoneProperty, val oldInfo: Pair<Piece, Int>?, val newInfo: Pair<Piece, Int>?) : PropertyEvent(property)
 class PropertyUpgradeEvent(property: ZoneProperty, val level: ZoneProperty.Level, val owner: Piece, val piece: Piece) : PropertyEvent(property)
 class PropertyAcquisitionEvent(property: ZoneProperty, val from: Piece, val to: Piece) : PropertyEvent(property)
 class PropertyClearEvent(property: ZoneProperty, val oldOwner: Piece, val oleLevel: Int) : PropertyEvent(property)
