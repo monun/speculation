@@ -102,6 +102,11 @@ class Dialog(val piece: PaperPiece) {
         isDisposed = true
         buttons.onEach { it.dispose() }.clear()
         timeout?.run { hideProgressBar() }
+
+        piece.player?.let {
+            it.clearTitle()
+            it.sendActionBar(Component.empty())
+        }
     }
 
     fun onUpdate() {

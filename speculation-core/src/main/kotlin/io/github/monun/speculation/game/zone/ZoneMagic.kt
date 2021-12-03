@@ -54,7 +54,11 @@ sealed interface Magic {
                 piece.board.pieces.random()
             }
 
-            target.moveTo(target.zone.shift(Movement.REVERSE), Movement.REVERSE, MovementCause.MAGIC, piece)
+            target.runCatching {
+                moveTo(target.zone.shift(Movement.REVERSE), Movement.REVERSE, MovementCause.MAGIC, piece)
+            }.onFailure { exception ->
+                if (target == piece) throw exception
+            }
         }
     }
 
@@ -62,8 +66,12 @@ sealed interface Magic {
     object Punishment : Magic {
         override suspend fun dispatch(zone: ZoneMagic, piece: Piece) {
             piece.properties.randomOrNull()?.let { property ->
-                piece.board.zoneJail.pieces.randomOrNull()
-                    ?.moveTo(property, Movement.TELEPORT, MovementCause.MAGIC, piece)
+                val target = piece.board.zoneJail.pieces.randomOrNull() ?: return
+                target.runCatching {
+                    moveTo(property, Movement.TELEPORT, MovementCause.MAGIC, piece)
+                }.onFailure {
+                    if (target == piece) throw it
+                }
             }
         }
     }
@@ -138,7 +146,7 @@ sealed interface Magic {
     object GiftProperty : Magic {
         override suspend fun dispatch(zone: ZoneMagic, piece: Piece) {
             val properties = piece.properties; if (properties.isEmpty()) return
-            val pieces = piece.board.pieces.filter { it != piece }; if (pieces.isEmpty()) return
+            val pieces = piece.board.survivors.filter { it != piece }; if (pieces.isEmpty()) return
 
             val targetProperty = piece.request(
                 GameDialogTargetZone(properties),
@@ -194,7 +202,10 @@ sealed interface Magic {
                 properties.random()
             }.let {
                 val property = (it as ZoneProperty)
-                property.update(property.owner!! to max(0, property.level - 1))
+                val level = property.level
+
+                if (level <= 0) property.update(null)
+                else property.update(property.owner!! to max(0, level - 1))
             }
         }
     }

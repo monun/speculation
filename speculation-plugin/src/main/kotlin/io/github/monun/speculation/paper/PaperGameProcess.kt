@@ -3,11 +3,14 @@ package io.github.monun.speculation.paper
 import io.github.monun.heartbeat.coroutines.HeartbeatScope
 import io.github.monun.speculation.game.Game
 import io.github.monun.speculation.game.zone.ZoneFestival
+import io.github.monun.speculation.paper.util.setSpeculationResourcePack
 import io.github.monun.speculation.plugin.SpeculationPlugin
 import io.github.monun.tap.fake.FakeEntityServer
 import io.github.monun.tap.fake.invisible
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
@@ -78,7 +81,16 @@ class PaperGameProcess(
 
         state = 2
 
-        game.launch(scope)
+        Bukkit.getOnlinePlayers().forEach {
+            it.setSpeculationResourcePack()
+        }
+
+        scope.launch {
+            Bukkit.broadcast(Component.text("리소스팩 적용중..."))
+            delay(5000L)
+
+            game.launch(scope)
+        }
     }
 
     private fun initializeZones() {
