@@ -71,30 +71,46 @@ class Game {
                         eventAdapter.call(PieceTakeTurnEvent(piece))
                         piece.zone.onTakeTurn(piece)
 
-                        val diceResult = piece.request(
-                            GameDialogDice(piece.numberOfDice),
-                            GameMessage.ROLL_THE_DICE
-                        ) {
-                            List(piece.numberOfDice) {
-                                1 + Random.nextInt(6)
+                        while (isActive) {
+                            val diceResult = piece.request(
+                                GameDialogDice(piece.numberOfDice),
+                                GameMessage.ROLL_THE_DICE
+                            ) {
+                                List(piece.numberOfDice) {
+                                    1 + Random.nextInt(6)
+                                }
                             }
+                            // 다음턴 주사위 초기화
+                            piece.numberOfDice = 2
+
+                            piece.zone.onTryLeave(piece, diceResult)
+                            piece.moveTo(
+                                piece.zone.shift(diceResult.sum()),
+                                Movement.FORWARD,
+                                MovementCause.DICE,
+                                piece
+                            )
+
+                            // 더블 체크
+                            if (diceResult.count() > 1) {
+                                val first = diceResult.first()
+                                if (diceResult.all { it == first }) continue
+                            }
+
+                            // ======================================= 디버그 시작 =======================================
+                            // piece.moveTo(board.zoneMagicA, Movement.TELEPORT, MovementCause.DICE, piece)
+                            // ======================================= 디버그 끝 ========================================
+
+                            break
                         }
-                        // 다음턴 주사위 초기화
-                        piece.numberOfDice = 2
-
-                        piece.zone.onTryLeave(piece, diceResult)
-                        piece.moveTo(piece.zone.shift(diceResult.sum()), Movement.FORWARD, MovementCause.DICE, piece)
-
-                        // ======================================= 디버그 시작 =======================================
-                        // piece.moveTo(board.zoneMagicA, Movement.TELEPORT, MovementCause.DICE, piece)
-                        // ======================================= 디버그 끝 =======================================
                     } catch (bankrupt: BankruptException) {
                         continue
-                    } catch (turnOver: PieceTurnOverException) {}
+                    } catch (turnOver: PieceTurnOverException) {
+                    }
                     eventAdapter.call(PieceTurnOverEvent(piece))
                 }
             } catch (gameOver: GameOverException) {
-                eventAdapter.call(GameOverEvent())
+                eventAdapter.call(GameOverEvent(gameOver.winner))
             } catch (cancellation: CancellationException) {
                 state = GameState.CANCELLED
             }

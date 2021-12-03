@@ -30,5 +30,5 @@ class PropertyClearEvent(property: ZoneProperty, val oldOwner: Piece, val oleLev
 class PropertyAddAmplifierEvent(property: ZoneProperty, val owner: Any, val amplifier: Double, val piece: Piece): PropertyEvent(property)
 class PropertyRemoveAmplifierEvent(property: ZoneProperty, val owner: Any, val amplifier: Double, val piece: Piece): PropertyEvent(property)
 
-class GameOverEvent(): GameEvent
+class GameOverEvent(val winner: Piece?): GameEvent
 

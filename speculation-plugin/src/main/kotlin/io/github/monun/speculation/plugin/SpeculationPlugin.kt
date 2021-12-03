@@ -3,8 +3,10 @@ package io.github.monun.speculation.plugin
 import io.github.monun.kommand.getValue
 import io.github.monun.kommand.kommand
 import io.github.monun.speculation.paper.PaperGameProcess
+import io.github.monun.speculation.paper.PieceColor
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import org.bukkit.Bukkit
 import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
@@ -17,6 +19,17 @@ class SpeculationPlugin : JavaPlugin() {
         private set
 
     override fun onEnable() {
+        val scoreboard = Bukkit.getScoreboardManager().mainScoreboard
+        for (color in PieceColor.values()) {
+            val name = color.textColor.toString()
+            val team = scoreboard.getTeam(name) ?: scoreboard.registerNewTeam(name)
+            team.apply {
+                team.color(color.textColor)
+            }
+            logger.info("Team ${team.name} generated")
+        }
+
+
         kommand {
             register("speculation") {
                 permission("speculation.commands")

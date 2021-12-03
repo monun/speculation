@@ -17,11 +17,9 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.title.Title
-import org.bukkit.Bukkit
-import org.bukkit.Material
-import org.bukkit.Particle
-import org.bukkit.Sound
+import org.bukkit.*
 import org.bukkit.entity.ArmorStand
+import org.bukkit.entity.Firework
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.Vector
 import java.time.Duration
@@ -50,6 +48,7 @@ class GameEventListener(private val process: PaperGameProcess) {
             register(PropertyRemoveAmplifierEvent::class.java, ::onPropertyRemoveAmplifier)
             register(PropertyUpdateEvent::class.java, ::onPropertyUpdate)
             register(PieceTurnOverEvent::class.java, ::onPieceTurnOver)
+            register(GameOverEvent::class.java, ::onGameOver)
         }
     }
 
@@ -500,6 +499,50 @@ class GameEventListener(private val process: PaperGameProcess) {
 
         withContext(Dispatchers.Heartbeat) {
             paperProperty.updateTolls()
+        }
+    }
+
+    private suspend fun onBankrupt(event: PieceBankruptEvent) {
+
+    }
+
+    private suspend fun onGameOver(event: GameOverEvent) {
+        withContext(Dispatchers.Heartbeat) {
+            Bukkit.getServer().showTitle(
+                Title.title(
+                    Component.text("게임종료").color(NamedTextColor.RED),
+                    event.winner?.let { Component.text("우승: ").append(it.attachment<PaperPiece>().name) }
+                        ?: Component.empty(),
+                    Title.Times.of(
+                        Duration.ofMillis(250),
+                        Duration.ofSeconds(5),
+                        Duration.ofMillis(250)
+                    )
+                )
+            )
+
+            for (zone in process.game.board.zones) {
+                val paperZone = zone.attachment<PaperZone>()
+                paperZone.nextPieceLocation().run {
+                    world.spawn(this, Firework::class.java).apply {
+                        fireworkMeta = fireworkMeta.also { meta ->
+                            meta.addEffect(
+                                FireworkEffect.builder().with(FireworkEffect.Type.STAR)
+                                    .withColor(Color.fromRGB(Random.nextInt(0xFFFFFF)))
+                                    .build()
+                            )
+                            meta.power = 0
+                        }
+                    }
+                }
+                delay(199L)
+            }
+
+            val credits = listOf(
+                "" to ""
+            )
+
+            //TODO 크레딧 출력
         }
     }
 }
