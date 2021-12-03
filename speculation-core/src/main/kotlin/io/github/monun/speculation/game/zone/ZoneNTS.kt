@@ -20,7 +20,7 @@ class ZoneNTS: Zone() {
         if (amount > 0) {
             piece.withdraw(amount, this)
 
-            val others = piece.board.pieces.filter { it != piece }
+            val others = piece.board.survivors.filter { it != piece }
 
             if (others.isNotEmpty()) {
                 val refund = max(1, amount / others.count())
