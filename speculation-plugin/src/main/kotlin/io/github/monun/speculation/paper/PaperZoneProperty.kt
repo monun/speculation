@@ -34,6 +34,24 @@ class PaperZoneProperty(
     val slots: List<ItemFrame>
         get() = listOf(slotLeft, slotCenter, slotRight)
 
+    private var festival = false
+
+    override fun onUpdate() {
+        if (festival) {
+            val min = box.min.apply { y = box.maxY + 0.2 }
+            val widthX = box.widthX
+            val widthZ = box.widthZ
+            val world = process.world
+            world.spawnParticle(
+                Particle.VILLAGER_HAPPY,
+                min.x + Random.nextDouble() * widthX,
+                min.y,
+                min.z + Random.nextDouble() * widthZ,
+                1
+            )
+        }
+    }
+
     override fun destroy() {
         nameTag.remove()
         tollsTag.remove()
@@ -76,11 +94,41 @@ class PaperZoneProperty(
 
     fun updateTolls() {
         val text = Component.text()
-        text.content(zone.tolls.toString()).color(NamedTextColor.GREEN)
+        text.content(zone.tolls.toString())
+
+        festival = if (zone.hasAmplifier(process.zoneFestival.zone)) {
+            text.color(NamedTextColor.RED)
+            true
+        } else {
+            text.color(NamedTextColor.GREEN)
+            false
+        }
+
+        val amplifier = zone.amplifierValue
+        if (amplifier > 1.0) text.append(
+            Component.text("  (x${amplifier.toString().removeSuffix(".0")})").color(NamedTextColor.GOLD)
+        )
 
         tollsTag.updateMetadata<ArmorStand> {
             customName(text.build())
         }
+    }
+
+    fun playFestivalEffect(piece: PaperPiece) {
+        val location = location
+        location.world.spawn(location, Firework::class.java).apply {
+            fireworkMeta = fireworkMeta.also { meta ->
+                repeat(3) {
+                    meta.addEffect(
+                        FireworkEffect.builder().with(FireworkEffect.Type.STAR)
+                            .withColor(Color.fromRGB(Random.nextInt(0xFFFFFF)))
+                            .build()
+                    )
+                }
+                meta.power = 0
+            }
+        }
+        piece.broadcast(this, Component.text("$festivalName 개최!"))
     }
 
     fun playUpgradeEffect(owner: PaperPiece, level: ZoneProperty.Level) {

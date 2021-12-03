@@ -4,11 +4,9 @@ import io.github.monun.speculation.game.Journey
 import io.github.monun.speculation.game.Piece
 import io.github.monun.speculation.game.dialog.GameDialogAcquisition
 import io.github.monun.speculation.game.dialog.GameDialogUpgrade
-import io.github.monun.speculation.game.event.PropertyAcquisitionEvent
-import io.github.monun.speculation.game.event.PropertyClearEvent
-import io.github.monun.speculation.game.event.PropertyUpgradeEvent
+import io.github.monun.speculation.game.event.*
 import io.github.monun.speculation.game.message.GameMessage
-import kotlinx.coroutines.processNextEventInCurrentThread
+import java.util.concurrent.ConcurrentHashMap
 
 class ZoneProperty : Zone() {
 
@@ -25,6 +23,14 @@ class ZoneProperty : Zone() {
     val levelLandmark = Level(4)
     val levels = listOf(levelFlag, levelVilla, levelBuilding, levelHotel, levelLandmark)
 
+    private val _amplifiers = ConcurrentHashMap<Any, Double>()
+
+    val amplifiers: Map<Any, Double>
+        get() = _amplifiers
+
+    val amplifierValue
+        get() = if (_amplifiers.isEmpty()) 1.0 else _amplifiers.values.sum()
+
     /**
      * 총 통행료
      */
@@ -38,7 +44,8 @@ class ZoneProperty : Zone() {
 
                 tolls += level.tolls
             }
-            return tolls
+
+            return (tolls * amplifierValue).toInt()
         }
 
     /**
@@ -70,6 +77,21 @@ class ZoneProperty : Zone() {
             }
             return amount + amount.shr(1)
         }
+
+    internal suspend fun addAmplifier(owner: Any, amplifier: Double, piece: Piece) {
+        _amplifiers[owner] = amplifier
+        board.game.eventAdapter.call(PropertyAddAmplifierEvent(this, owner, amplifier, piece))
+    }
+
+    internal suspend fun removeAmplifier(owner: Any, piece: Piece): Double? {
+        return _amplifiers.remove(owner)?.also {
+            board.game.eventAdapter.call(PropertyRemoveAmplifierEvent(this, owner, it, piece))
+        }
+    }
+
+    fun hasAmplifier(owner: Any): Boolean {
+        return _amplifiers.containsKey(owner)
+    }
 
     override suspend fun onArrive(journey: Journey) {
         val piece = journey.piece

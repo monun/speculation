@@ -19,7 +19,6 @@ class PieceLeaveEvent(piece: Piece, val journey: Journey, val destination: Zone)
 class PieceArriveEvent(piece: Piece, val journey: Journey, val from: Zone): PieceEvent(piece)
 class PieceGambleStartEvent(piece: Piece, val betting: Int, val turns: List<Piece>): PieceEvent(piece)
 class PieceGambleEndEvent(val winners: List<Piece>, val losers: List<Piece>, val prizePerWinner: Int): GameEvent
-
 class PieceJailbreakEvent(piece: Piece, val remaining: Int, val success: Boolean): PieceEvent(piece)
 
 abstract class PropertyEvent(val property: ZoneProperty): GameEvent
@@ -27,6 +26,9 @@ abstract class PropertyEvent(val property: ZoneProperty): GameEvent
 class PropertyUpgradeEvent(property: ZoneProperty, val level: ZoneProperty.Level, val owner: Piece, val piece: Piece) : PropertyEvent(property)
 class PropertyAcquisitionEvent(property: ZoneProperty, val from: Piece, val to: Piece) : PropertyEvent(property)
 class PropertyClearEvent(property: ZoneProperty, val oldOwner: Piece, val oleLevel: Int) : PropertyEvent(property)
+
+class PropertyAddAmplifierEvent(property: ZoneProperty, val owner: Any, val amplifier: Double, val piece: Piece): PropertyEvent(property)
+class PropertyRemoveAmplifierEvent(property: ZoneProperty, val owner: Any, val amplifier: Double, val piece: Piece): PropertyEvent(property)
 
 class GameOverEvent(): GameEvent
 

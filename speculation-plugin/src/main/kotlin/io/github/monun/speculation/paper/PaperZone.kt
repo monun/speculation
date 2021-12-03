@@ -54,6 +54,7 @@ abstract class PaperZone {
         z += Random.nextDouble(box.widthZ)
     }.toLocation(process.world)
 
+    open fun onUpdate() = Unit
     open suspend fun playPassEffect() = Unit
     open suspend fun playArriveEffect() = Unit
     open suspend fun playLeaveEffect() = Unit

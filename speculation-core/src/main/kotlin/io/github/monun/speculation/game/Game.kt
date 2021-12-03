@@ -63,13 +63,6 @@ class Game {
 //            pieces.forEach { it.zone = board.zones.last() }
             // ======================================= debug end =======================================
 
-
-            // ======================================= 디버그 시작 =======================================
-            board.pieces.forEach {
-                it.moveTo(board.zoneSpecials[2], Movement.TELEPORT, MovementCause.MAGIC, it) // debug
-            }
-            // ======================================= 디버그 끝 =======================================
-
             try {
                 while (isActive) {
                     if (turnQueue.isEmpty()) turnQueue.addAll(turns.filter { !it.isBankrupt })
@@ -80,10 +73,17 @@ class Game {
                     currentTurn = piece
 
                     try {
-                        val from = piece.zone
 
                         eventAdapter.call(PieceTakeTurnEvent(piece))
-                        from.onTakeTurn(piece)
+                        piece.zone.onTakeTurn(piece)
+
+                        // ======================================= 디버그 시작 =======================================
+                        board.zoneProperties.forEach {
+                            it.upgrade(piece, piece, 4)
+                        }
+                        piece.moveTo(board.zoneSpecials[4], Movement.TELEPORT, MovementCause.MAGIC, piece) // debug
+//                        piece.moveTo(board.zoneProperties, Movement.TELEPORT, MovementCause.MAGIC, piece) // debug
+                        // ======================================= 디버그 끝 =======================================
 
                         val diceResult = piece.request(
                             GameDialogDice(2),
@@ -94,8 +94,8 @@ class Game {
                             }
                         }
 
-                        from.onTryLeave(piece, diceResult)
-                        piece.moveTo(from.shift(diceResult.sum()), Movement.FORWARD, MovementCause.DICE, piece)
+                        piece.zone.onTryLeave(piece, diceResult)
+                        piece.moveTo(piece.zone.shift(diceResult.sum()), Movement.FORWARD, MovementCause.DICE, piece)
                     }
                     catch (bankrupt: BankruptException) {}
                     catch (turnOver: TurnOverException) {

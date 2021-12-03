@@ -2,6 +2,7 @@ package io.github.monun.speculation.paper
 
 import io.github.monun.heartbeat.coroutines.HeartbeatScope
 import io.github.monun.speculation.game.Game
+import io.github.monun.speculation.game.zone.ZoneFestival
 import io.github.monun.speculation.plugin.SpeculationPlugin
 import io.github.monun.tap.fake.FakeEntityServer
 import io.github.monun.tap.fake.invisible
@@ -36,6 +37,8 @@ class PaperGameProcess(
 
     lateinit var game: Game
         private set
+
+    lateinit var zoneFestival: PaperZoneFestival
 
     lateinit var fakeEntityServer: FakeEntityServer
         private set
@@ -134,6 +137,8 @@ class PaperGameProcess(
             x += forwardFace.modX * 4
             z += forwardFace.modZ * 4
         }
+
+        zoneFestival = zones.find { it is ZoneFestival }!!.attachment()
     }
 
     private fun initializeZoneProperties() {
@@ -351,11 +356,11 @@ class PaperGameProcess(
 
     private fun onUpdate() {
         dialogDispatcher.currentDialog?.onUpdate()
+        game.board.zones.map { it.attachment<PaperZone>() }.forEach { it.onUpdate() }
         dices.removeIf {
             it.onUpdate()
             !it.isValid
         }
-
         fakeEntityServer.update()
 
 //        game.board.zones.map { it.attachment<PaperZone>() }.forEach { zone ->

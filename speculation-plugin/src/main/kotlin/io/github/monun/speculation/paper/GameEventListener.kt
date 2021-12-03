@@ -4,9 +4,11 @@ import io.github.monun.heartbeat.coroutines.Heartbeat
 import io.github.monun.heartbeat.coroutines.Suspension
 import io.github.monun.speculation.game.MovementCause
 import io.github.monun.speculation.game.event.*
+import io.github.monun.speculation.game.zone.ZoneFestival
 import io.github.monun.speculation.game.zone.ZoneJail
 import io.github.monun.speculation.paper.util.playSound
 import io.github.monun.tap.protocol.PacketSupport
+import io.github.monun.tap.trail.TrailSupport
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -17,6 +19,7 @@ import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.title.Title
 import org.bukkit.Bukkit
 import org.bukkit.Material
+import org.bukkit.Particle
 import org.bukkit.Sound
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.Vector
@@ -42,6 +45,8 @@ class GameEventListener(private val process: PaperGameProcess) {
             register(PieceArriveEvent::class.java, ::onPieceArrive)
             register(PieceTakeTurnEvent::class.java, ::onPieceTakeTurn)
             register(PieceJailbreakEvent::class.java, ::onPieceTryEscape)
+            register(PropertyAddAmplifierEvent::class.java, ::onPropertyAddAmplifier)
+            register(PropertyRemoveAmplifierEvent::class.java, ::onPropertyRemoveAmplifier)
         }
     }
 
@@ -393,5 +398,54 @@ class GameEventListener(private val process: PaperGameProcess) {
         }
 
         delay(1250L)
+    }
+
+    private suspend fun onPropertyAddAmplifier(event: PropertyAddAmplifierEvent) {
+        val property = event.property
+        val paperProperty = property.attachment<PaperZoneProperty>()
+
+        withContext(Dispatchers.Heartbeat) {
+            if (event.owner is ZoneFestival) {
+                val locOfFestival = process.zoneFestival.location
+                val locOfProperty = paperProperty.location
+                val distance = locOfFestival.distance(locOfProperty)
+                val ticks = (distance).toInt()
+
+                val vector = locOfProperty.clone().subtract(locOfFestival).toVector()
+
+                var prevLocation = locOfFestival.clone()
+
+                delay(1500L)
+
+                for (tick in 1..ticks) {
+                    delay(1L)
+                    val parabolaX = tick.toDouble() / ticks
+                    val parabolaY = 4.0 * parabolaX - 4.0 * parabolaX.pow(2)
+
+                    val location = locOfFestival.clone().apply {
+                        add(vector.clone().multiply(parabolaX))
+                        y += parabolaY * distance / 3.0
+                    }
+
+                    TrailSupport.trail(prevLocation, location, 0.2) { world, x, y, z ->
+                        world.spawnParticle(Particle.FIREWORKS_SPARK, x, y, z, 1, 0.0, 0.0, 0.0, 0.1, null, true)
+                    }
+
+                    prevLocation = location
+                }
+            }
+
+            paperProperty.playFestivalEffect(event.piece.attachment())
+            paperProperty.updateTolls()
+        }
+    }
+
+    private suspend fun onPropertyRemoveAmplifier(event: PropertyRemoveAmplifierEvent) {
+        val property = event.property
+        val paperProperty = property.attachment<PaperZoneProperty>()
+
+        withContext(Dispatchers.Heartbeat) {
+            paperProperty.updateTolls()
+        }
     }
 }
