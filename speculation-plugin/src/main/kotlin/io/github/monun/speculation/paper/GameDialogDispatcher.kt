@@ -7,6 +7,7 @@ import io.github.monun.speculation.game.dialog.*
 import io.github.monun.speculation.game.message.GameMessage
 import io.github.monun.speculation.game.zone.Zone
 import io.github.monun.speculation.game.zone.ZoneProperty
+import io.github.monun.speculation.paper.util.playSound
 import io.github.monun.tap.math.toRadians
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -18,8 +19,10 @@ import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.title.Title
 import org.bukkit.Bukkit
+import org.bukkit.Sound
 import org.bukkit.util.Vector
 import java.time.Duration
+import kotlin.math.roundToInt
 
 class GameDialogDispatcher {
     private lateinit var process: PaperGameProcess
@@ -37,6 +40,7 @@ class GameDialogDispatcher {
             register(GameDialogSeizure::class.java, ::seizure)
             register(GameDialogBetting::class.java, ::betting)
             register(GameDialogPortal::class.java, ::portal)
+            register(GameDialogTax::class.java, ::tax)
         }
     }
 
@@ -426,5 +430,80 @@ class GameDialogDispatcher {
         }
 
         return channel.receive()
+    }
+
+    private suspend fun tax(taxDialog: GameDialogTax): Int {
+        val piece = taxDialog.piece
+        val paperPiece = piece.attachment<PaperPiece>()
+        val zone = taxDialog.zone
+        val paperZone = zone.attachment<PaperZoneNTS>()
+
+        return withContext(Dispatchers.Heartbeat) {
+            val location = paperPiece.stand.location
+            var value = taxDialog.max.toDouble()
+            var speed = 0.0
+            var lastAmount = 0
+
+            var amount = value.roundToInt()
+            var stop = false
+
+            newDialog(piece) {
+                button(paperZone.box) {
+                    onClick { _, _, _ ->
+                        stop = true
+                        disposeCurrentDialog()
+                    }
+                }
+            }
+
+            while (value > 0.0) {
+                delay(1L)
+
+                value -= speed
+                speed += 0.04
+
+                amount = value.roundToInt()
+
+                Bukkit.getServer().showTitle(
+                    Title.title(
+                        Component.text(amount).color(NamedTextColor.DARK_GREEN).decorate(TextDecoration.BOLD),
+                        Component.text("국세청을 클릭하여 납부액을 결정하세요"),
+                        Title.Times.of(
+                            Duration.ofMillis(0),
+                            Duration.ofSeconds(1),
+                            Duration.ofMillis(250)
+                        )
+                    )
+                )
+
+                if (amount != lastAmount) {
+                    lastAmount = amount
+                    location.playSound(Sound.BLOCK_NOTE_BLOCK_SNARE, 2.0F)
+                }
+
+                if (stop) break
+            }
+
+            disposeCurrentDialog()
+
+            if (!stop) {
+                amount = taxDialog.max
+                location.playSound(Sound.ENTITY_PIG_DEATH, 2.0F)
+            }
+
+            Bukkit.getServer().showTitle(
+                Title.title(
+                    Component.text("납부금액: $amount").color(NamedTextColor.DARK_GREEN),
+                    Component.empty(),
+                    Title.Times.of(
+                        Duration.ofMillis(0),
+                        Duration.ofSeconds(2),
+                        Duration.ofMillis(250)
+                    )
+                )
+            )
+            delay(2000L)
+            amount
+        }
     }
 }

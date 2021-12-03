@@ -9,7 +9,6 @@ import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 
-// TODO 국세청
 // TODO 이벤트
 // TODO 돈 메시지 표시
 

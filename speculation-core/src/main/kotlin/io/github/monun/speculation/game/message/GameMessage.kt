@@ -8,4 +8,5 @@ enum class GameMessage {
     BETTING,
     ROLL_THE_DICE_FOR_GAMBLE,
     PORTAL,
+    TAX,
 }

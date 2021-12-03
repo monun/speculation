@@ -1,17 +1,25 @@
 package io.github.monun.speculation.paper
 
+import io.github.monun.heartbeat.coroutines.Heartbeat
+import io.github.monun.speculation.game.dialog.GameDialogTax
+import io.github.monun.speculation.paper.util.playSound
 import io.github.monun.tap.fake.FakeEntity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import net.kyori.adventure.bossbar.BossBar
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.title.Title
 import org.bukkit.Bukkit
 import org.bukkit.Location
+import org.bukkit.Sound
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.Player
 import org.bukkit.util.BoundingBox
 import org.bukkit.util.Vector
 import java.time.Duration
+import kotlin.math.roundToInt
 
 class Dialog(val piece: PaperPiece) {
     private var message: (() -> Component)? = null
@@ -217,7 +225,7 @@ class Dialog(val piece: PaperPiece) {
                 false
             }
         }
-
-
     }
+
+
 }

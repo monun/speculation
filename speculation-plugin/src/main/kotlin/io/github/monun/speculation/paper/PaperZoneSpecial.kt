@@ -94,7 +94,7 @@ class PaperZonePortal(override val zone: ZonePortal) : PaperZoneSpecial() {
 
 class PaperZoneNTS(override val zone: ZoneNTS) : PaperZoneSpecial() {
     override suspend fun playArriveEffect(piece: PaperPiece) {
-        piece.broadcast(this, Component.text("성실납세!"))
+        piece.broadcast(this, Component.text("자진납세!"))
         location.playSound(Sound.ENTITY_PIGLIN_JEALOUS, 1.0F)
     }
 }
