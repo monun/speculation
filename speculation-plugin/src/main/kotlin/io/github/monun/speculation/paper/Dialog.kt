@@ -109,7 +109,7 @@ class Dialog(val piece: PaperPiece) {
             }
 
             val text = Component.text().color(NamedTextColor.WHITE)
-            var isNotEmpty = true
+            var isNotEmpty = false
 
             actionMessage?.invoke()?.let {
                 text.append(it)

@@ -29,6 +29,7 @@ class ZoneJail : Zone() {
 
     override suspend fun onArrive(journey: Journey) {
         journey.piece.jailCount = count
+        throw TurnOverException()
     }
 
     override suspend fun onLeave(journey: Journey) {

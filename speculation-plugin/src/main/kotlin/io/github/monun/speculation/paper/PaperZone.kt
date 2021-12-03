@@ -56,8 +56,8 @@ abstract class PaperZone {
 
     open fun onUpdate() = Unit
     open suspend fun playPassEffect() = Unit
-    open suspend fun playArriveEffect() = Unit
-    open suspend fun playLeaveEffect() = Unit
+    open suspend fun playArriveEffect(piece: PaperPiece) = Unit
+    open suspend fun playLeaveEffect(piece: PaperPiece) = Unit
 
     abstract fun destroy()
 }

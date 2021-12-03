@@ -7,4 +7,5 @@ enum class GameMessage {
     SEIZURE,
     BETTING,
     ROLL_THE_DICE_FOR_GAMBLE,
+    PORTAL,
 }

@@ -94,7 +94,7 @@ class GameEventListener(private val process: PaperGameProcess) {
         val paperZone = zone.attachment<PaperZone>()
 
         withContext(Dispatchers.Heartbeat) {
-            paperZone.playLeaveEffect()
+            paperZone.playLeaveEffect(event.piece.attachment())
         }
     }
 
@@ -103,7 +103,7 @@ class GameEventListener(private val process: PaperGameProcess) {
         val paperZone = zone.attachment<PaperZone>()
 
         withContext(Dispatchers.Heartbeat) {
-            paperZone.playArriveEffect()
+            paperZone.playArriveEffect(event.piece.attachment())
         }
     }
 
@@ -386,7 +386,7 @@ class GameEventListener(private val process: PaperGameProcess) {
                 Bukkit.getServer().showTitle(
                     Title.title(
                         Component.text("탈출 실패").color(NamedTextColor.RED),
-                        Component.text("${piece.jailCount} / ${ZoneJail.count}"),
+                        Component.text("남은 감옥 턴: ${piece.jailCount} / ${ZoneJail.count}"),
                         Title.Times.of(
                             Duration.ofMillis(0),
                             Duration.ofSeconds(1),

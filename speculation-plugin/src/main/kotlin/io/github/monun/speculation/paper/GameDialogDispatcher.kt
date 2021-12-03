@@ -5,6 +5,7 @@ import io.github.monun.heartbeat.coroutines.Suspension
 import io.github.monun.speculation.game.Piece
 import io.github.monun.speculation.game.dialog.*
 import io.github.monun.speculation.game.message.GameMessage
+import io.github.monun.speculation.game.zone.Zone
 import io.github.monun.speculation.game.zone.ZoneProperty
 import io.github.monun.tap.math.toRadians
 import kotlinx.coroutines.Dispatchers
@@ -35,6 +36,7 @@ class GameDialogDispatcher {
             register(GameDialogAcquisition::class.java, ::acquisition)
             register(GameDialogSeizure::class.java, ::seizure)
             register(GameDialogBetting::class.java, ::betting)
+            register(GameDialogPortal::class.java, ::portal)
         }
     }
 
@@ -394,5 +396,35 @@ class GameDialogDispatcher {
 
             channel.receive()
         }
+    }
+
+    private suspend fun portal(portalDialog: GameDialogPortal): Zone {
+        val piece = portalDialog.piece
+        val channel = Channel<Zone>()
+
+        withContext(Dispatchers.Heartbeat) {
+            newDialog(piece) {
+                message {
+                    Component.text("이동할 위치를 선택해주세요")
+                }
+                for (zone in piece.board.zones.filter { it != piece.zone }) {
+                    val paperZone = zone.attachment<PaperZone>()
+
+                    button(paperZone.box) {
+                        actionMessage { Component.text("${paperZone.name}(으)로 이동") }
+
+                        onClick { _, _, _ ->
+                            channel.trySend(zone)
+                            disposeCurrentDialog()
+                        }
+                    }
+                }
+                timeout(Component.text("포탈"), 10L * 1000L) {
+                    channel.trySend(portalDialog.default())
+                }
+            }
+        }
+
+        return channel.receive()
     }
 }

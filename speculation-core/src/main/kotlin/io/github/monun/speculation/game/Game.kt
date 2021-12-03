@@ -73,17 +73,8 @@ class Game {
                     currentTurn = piece
 
                     try {
-
                         eventAdapter.call(PieceTakeTurnEvent(piece))
                         piece.zone.onTakeTurn(piece)
-
-                        // ======================================= 디버그 시작 =======================================
-                        board.zoneProperties.forEach {
-                            it.upgrade(piece, piece, 4)
-                        }
-                        piece.moveTo(board.zoneSpecials[4], Movement.TELEPORT, MovementCause.MAGIC, piece) // debug
-//                        piece.moveTo(board.zoneProperties, Movement.TELEPORT, MovementCause.MAGIC, piece) // debug
-                        // ======================================= 디버그 끝 =======================================
 
                         val diceResult = piece.request(
                             GameDialogDice(2),
@@ -95,7 +86,11 @@ class Game {
                         }
 
                         piece.zone.onTryLeave(piece, diceResult)
-                        piece.moveTo(piece.zone.shift(diceResult.sum()), Movement.FORWARD, MovementCause.DICE, piece)
+//                        piece.moveTo(piece.zone.shift(diceResult.sum()), Movement.FORWARD, MovementCause.DICE, piece)
+
+                        // ======================================= 디버그 시작 =======================================
+                        piece.moveTo(board.zoneSpecials[6], Movement.FORWARD, MovementCause.DICE, piece)
+                        // ======================================= 디버그 끝 =======================================
                     }
                     catch (bankrupt: BankruptException) {}
                     catch (turnOver: TurnOverException) {

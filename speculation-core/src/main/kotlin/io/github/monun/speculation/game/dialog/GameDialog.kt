@@ -2,6 +2,7 @@ package io.github.monun.speculation.game.dialog
 
 import io.github.monun.speculation.game.Piece
 import io.github.monun.speculation.game.message.GameMessage
+import io.github.monun.speculation.game.zone.Zone
 import io.github.monun.speculation.game.zone.ZoneProperty
 
 abstract class GameDialog<R> {
@@ -26,3 +27,4 @@ class GameDialogAcquisition(val property: ZoneProperty, val costs: Int) : GameDi
 class GameDialogUpgrade(val property: ZoneProperty, val level: ZoneProperty.Level) : GameDialog<Boolean>()
 class GameDialogSeizure(val requiredAmount: Int) : GameDialog<List<ZoneProperty>>()
 class GameDialogBetting(val max: Int) : GameDialog<Int>()
+class GameDialogPortal() : GameDialog<Zone>()
