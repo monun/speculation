@@ -105,7 +105,8 @@ class ZoneProperty : Zone() {
                 piece.ensureAlive()
             }
 
-            if (piece.hasTurn) {
+            // 현재 턴, 랜드마크가 아니여야 인수 가능
+            if (piece.hasTurn && !levelLandmark.condition) {
                 val acquisitionCosts = acquisitionCosts
 
                 if (piece.balance >= acquisitionCosts) {
