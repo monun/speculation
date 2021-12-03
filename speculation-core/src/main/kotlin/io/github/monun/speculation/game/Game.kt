@@ -89,7 +89,7 @@ class Game {
                         piece.moveTo(piece.zone.shift(diceResult.sum()), Movement.FORWARD, MovementCause.DICE, piece)
 
                         // ======================================= 디버그 시작 =======================================
-//                        piece.moveTo(board.zoneSpecials.last(), Movement.TELEPORT, MovementCause.DICE, piece)
+                        // piece.moveTo(board.zoneSpecials.last(), Movement.TELEPORT, MovementCause.DICE, piece)
                         // ======================================= 디버그 끝 =======================================
                     }
                     catch (bankrupt: BankruptException) {}

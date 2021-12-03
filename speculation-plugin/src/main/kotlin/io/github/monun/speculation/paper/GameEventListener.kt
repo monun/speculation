@@ -141,6 +141,16 @@ class GameEventListener(private val process: PaperGameProcess) {
         val paperZone = zone.attachment<PaperZone>()
 
         withContext(Dispatchers.Heartbeat) {
+            Component.text().also { text ->
+                text.append(Component.text("[${paperZone.name}]"))
+                text.append(Component.text(" -> "))
+                text.append(Component.text(amount).color(NamedTextColor.GREEN))
+                text.append(Component.text(" -> "))
+                text.append(paperPiece.name)
+            }.build().let {
+                Bukkit.broadcast(it)
+            }
+
             val box = paperZone.box
             val point = paperZone.box.min.toLocation(process.world).apply { y = box.maxY + 0.25 }
             val xWidth = box.widthX
@@ -185,6 +195,15 @@ class GameEventListener(private val process: PaperGameProcess) {
 
         withContext(Dispatchers.Heartbeat) {
             paperPiece.updateScore(piece.balance)
+            Component.text().also { text ->
+                text.append(paperPiece.name)
+                text.append(Component.text(" -> "))
+                text.append(Component.text(event.amount).color(NamedTextColor.GREEN))
+                text.append(Component.text(" -> "))
+                text.append(Component.text("[${event.zone.attachment<PaperZone>().name}]"))
+            }.build().let {
+                Bukkit.broadcast(it)
+            }
 
             val location = paperPiece.stand.location.apply { y += 1.0 }
 
@@ -217,6 +236,16 @@ class GameEventListener(private val process: PaperGameProcess) {
 
         withContext(Dispatchers.Heartbeat) {
             paperPiece.updateScore(piece.balance)
+
+            Component.text().also { text ->
+                text.append(paperPiece.name)
+                text.append(Component.text(" -> "))
+                text.append(Component.text(event.amount).color(NamedTextColor.GREEN))
+                text.append(Component.text(" -> "))
+                text.append(paperReceiver.name)
+            }.build().let {
+                Bukkit.broadcast(it)
+            }
 
             val location = paperPiece.stand.location.apply { y += 1.0 }
             location.playSound(Sound.BLOCK_CHAIN_PLACE, 0.1F)

@@ -478,7 +478,7 @@ class GameDialogDispatcher {
 
                 if (amount != lastAmount) {
                     lastAmount = amount
-                    location.playSound(Sound.BLOCK_NOTE_BLOCK_SNARE, 2.0F)
+                    location.playSound(Sound.BLOCK_NOTE_BLOCK_SNARE, 0.1F)
                 }
 
                 if (stop) break
@@ -488,12 +488,12 @@ class GameDialogDispatcher {
 
             if (!stop) {
                 amount = taxDialog.max
-                location.playSound(Sound.ENTITY_PIG_DEATH, 2.0F)
+                location.playSound(Sound.ENTITY_PIG_DEATH, 1.0F)
             }
 
             Bukkit.getServer().showTitle(
                 Title.title(
-                    Component.text("납부금액: $amount").color(NamedTextColor.DARK_GREEN),
+                    Component.text("$amount").color(NamedTextColor.DARK_GREEN).decorate(TextDecoration.BOLD),
                     Component.empty(),
                     Title.Times.of(
                         Duration.ofMillis(0),
