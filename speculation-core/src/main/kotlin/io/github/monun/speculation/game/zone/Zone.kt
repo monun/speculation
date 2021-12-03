@@ -1,13 +1,15 @@
 package io.github.monun.speculation.game.zone
 
 import io.github.monun.speculation.game.*
-import javax.print.attribute.standard.Destination
 import kotlin.math.abs
 
-abstract class Zone: Attachable() {
+abstract class Zone : Attachable() {
     lateinit var board: Board
     lateinit var previous: Zone
     lateinit var next: Zone
+
+    val pieces: List<Piece>
+        get() = board.pieces.filter { !it.isBankrupt && it.zone == this }
 
     fun shift(movement: Movement): Zone {
         return when (movement) {

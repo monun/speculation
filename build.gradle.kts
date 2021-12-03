@@ -28,6 +28,7 @@ subprojects {
 
     dependencies {
         implementation(kotlin("stdlib"))
+        implementation(kotlin("reflect"))
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
 
         testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.2")

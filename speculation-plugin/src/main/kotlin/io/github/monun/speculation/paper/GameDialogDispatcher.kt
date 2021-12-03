@@ -5,6 +5,7 @@ import io.github.monun.heartbeat.coroutines.Suspension
 import io.github.monun.speculation.game.Piece
 import io.github.monun.speculation.game.dialog.*
 import io.github.monun.speculation.game.message.GameMessage
+import io.github.monun.speculation.game.zone.Magic
 import io.github.monun.speculation.game.zone.Zone
 import io.github.monun.speculation.game.zone.ZoneProperty
 import io.github.monun.speculation.paper.util.playSound
@@ -39,8 +40,10 @@ class GameDialogDispatcher {
             register(GameDialogAcquisition::class.java, ::acquisition)
             register(GameDialogSeizure::class.java, ::seizure)
             register(GameDialogBetting::class.java, ::betting)
-            register(GameDialogPortal::class.java, ::portal)
             register(GameDialogTax::class.java, ::tax)
+            register(GameDialogTargetZone::class.java, ::targetZone)
+            register(GameDialogTargetPiece::class.java, ::targetPiece)
+            register(GameDialogMagic::class.java, ::magic)
         }
     }
 
@@ -51,11 +54,25 @@ class GameDialogDispatcher {
         }
     }
 
+    // TODO 지우고 리팩토링 필요
     private fun newDialog(piece: Piece, init: Dialog.() -> Unit): Dialog {
         disposeCurrentDialog()
 
         return Dialog(piece.attachment()).apply(init).also {
             currentDialog = it
+        }
+    }
+
+    private fun newDialog(dialog: GameDialog<*>, init: Dialog.() -> Unit): Dialog {
+        disposeCurrentDialog()
+
+        return Dialog(dialog.piece.attachment()).apply {
+            val messageText = messageOf(dialog.message)
+            val messageComponent = Component.text(messageText.first)
+
+            message { messageComponent }
+            init()
+            currentDialog = this
         }
     }
 
@@ -402,34 +419,165 @@ class GameDialogDispatcher {
         }
     }
 
-    private suspend fun portal(portalDialog: GameDialogPortal): Zone {
-        val piece = portalDialog.piece
+    private suspend fun magic(magicDialog: GameDialogMagic): Magic {
+        val magics = magicDialog.magics
+        val paperPiece = magicDialog.piece.attachment<PaperPiece>()
+
+        return withContext(Dispatchers.Heartbeat) {
+            val loc = paperPiece.stand.location
+            val infoMap = magics.associateWith {
+                when(it) {
+                    Magic.Angel -> "천사" to "통행료 1회 면제"
+                    Magic.Arrest -> "긴급체포" to "즉시 감옥으로 이동"
+                    Magic.Earthquake -> "지진" to "지정한 부동산 등급 하락"
+                    Magic.GiftProperty -> "마음의 선물" to "자신의 부동산 하나 증여"
+                    Magic.Moonwalk -> "문워크" to "주사위를 던져 뒤로 이동"
+                    Magic.MoveToSeoul -> "서울구경" to "서울로 즉시 이동"
+                    Magic.MoveToStart -> "초심찾기" to "시작지점으로 이동"
+                    Magic.Overprice -> "바가지 요금" to "지정한 부동산 통행료 x2"
+                    Magic.Pickpocket -> "소매치기" to "주사위를 하나 던져 지나가며 소매치기"
+                    Magic.Punishment -> "천벌" to "감옥에 있는 대상을 자신의 부동산으로 소환"
+                    Magic.Push -> "밀치기" to "지정한 대상을 뒤로 한칸 이동"
+                    Magic.QuadrupleDice -> "쿼드러플 주사위" to "다음 주사위는 4개"
+                    Magic.SingleDice -> "트리플 주사위" to "다음 주사위는 1개"
+                    Magic.Storm -> "폭풍우" to "무작위 땅으로 즉시 이동"
+                    Magic.TripleDice -> "트리플 주사위" to "다음 주사위는 3개"
+                }
+            }
+            var currentMagic: Magic = magics.random()
+            var stop = false
+
+            newDialog(magicDialog.piece) {
+                button(PaperGameConfig.centerBox) {
+                    onClick { _, _, _ ->
+                        stop = true
+                        disposeCurrentDialog()
+                    }
+                }
+                timeout(Component.text("마법"), 5L * 1000L) {
+                    stop = true
+                }
+            }
+
+            do {
+                delay(1L)
+                val info = infoMap[currentMagic] ?: "null" to "null"
+
+                Bukkit.getServer().showTitle(
+                    Title.title(
+                        Component.text(info.first).color(NamedTextColor.GOLD),
+                        Component.text("보드를 클릭하여 마법을 선택하세요"),
+                        Title.Times.of(
+                            Duration.ofMillis(0),
+                            Duration.ofSeconds(1),
+                            Duration.ofMillis(250)
+                        )
+                    )
+                )
+                loc.playSound(Sound.ENTITY_ARROW_HIT_PLAYER, 1.0F)
+
+                if (stop) break
+
+                currentMagic = magics.random()
+            } while (true)
+
+            val info = infoMap[currentMagic] ?: "null" to "null"
+            Bukkit.getServer().showTitle(
+                Title.title(
+                    Component.text(info.first).color(NamedTextColor.GOLD),
+                    Component.text(info.second),
+                    Title.Times.of(
+                        Duration.ofMillis(0),
+                        Duration.ofSeconds(2),
+                        Duration.ofMillis(250)
+                    )
+                )
+            )
+
+            delay(2000L)
+
+            currentMagic
+        }
+    }
+
+    private suspend fun targetZone(targetZoneDialog: GameDialogTargetZone): Zone {
+        val piece = targetZoneDialog.piece
         val channel = Channel<Zone>()
+        val messageText = messageOf(targetZoneDialog.message)
 
         withContext(Dispatchers.Heartbeat) {
             newDialog(piece) {
                 message {
-                    Component.text("이동할 위치를 선택해주세요")
+                    Component.text(messageText.first)
                 }
-                for (zone in piece.board.zones.filter { it != piece.zone }) {
-                    val paperZone = zone.attachment<PaperZone>()
+                for (target in targetZoneDialog.candidates) {
+                    val paperZone = target.attachment<PaperZone>()
 
                     button(paperZone.box) {
-                        actionMessage { Component.text("${paperZone.name}(으)로 이동") }
+                        actionMessage { Component.text(paperZone.name) }
 
                         onClick { _, _, _ ->
-                            channel.trySend(zone)
+                            channel.trySend(target)
                             disposeCurrentDialog()
                         }
                     }
                 }
-                timeout(Component.text("포탈"), 10L * 1000L) {
-                    channel.trySend(portalDialog.default())
+                timeout(Component.text(messageText.second), 10L * 1000L) {
+                    channel.trySend(targetZoneDialog.default())
                 }
             }
         }
 
         return channel.receive()
+    }
+
+    private suspend fun targetPiece(targetPieceDialog: GameDialogTargetPiece): Piece {
+        val piece = targetPieceDialog.piece
+        val channel = Channel<Piece>()
+        val messageText = messageOf(targetPieceDialog.message)
+
+        withContext(Dispatchers.Heartbeat) {
+            newDialog(piece) {
+                message {
+                    Component.text(messageText.first)
+                }
+                for (target in targetPieceDialog.candidates) {
+                    val paperPiece = target.attachment<PaperPiece>()
+
+                    button(paperPiece.stand.bukkitEntity.boundingBox) {
+                        actionMessage { paperPiece.name }
+
+                        onClick { _, _, _ ->
+                            channel.trySend(target)
+                            disposeCurrentDialog()
+                        }
+                    }
+                }
+                timeout(Component.text(messageText.second), 10L * 1000L) {
+                    channel.trySend(targetPieceDialog.default())
+                }
+            }
+        }
+
+        return channel.receive()
+    }
+    
+    private fun messageOf(message: GameMessage) = when(message) {
+        GameMessage.ROLL_THE_DICE -> "보드를 클릭하여 주사위를 굴리세요" to "주사위"
+        GameMessage.ACQUISITION -> "부동산을 클릭하여 인수하세요" to "인수"
+        GameMessage.UPGRADE -> "부동산을 클릭하여 업그레이드하세요" to "부동산 업그레이드"
+        GameMessage.SEIZURE -> "매각할 부동산을 선택하세요" to "부동산 매각"
+        GameMessage.BETTING -> "배팅할 금액을 채팅창에 입력하세요" to "금액 배팅"
+        GameMessage.ROLL_THE_DICE_FOR_GAMBLE -> "보드를 클릭하여 운명의 주사위를 굴리세요" to "운명의 주사위"
+        GameMessage.ZONE_FOR_PORTAL -> "이동할 위치를 선택해주세요" to "포탈"
+        GameMessage.TAX -> "국세청을 클릭하여 납부할 금액을 설정하세요" to "국세청"
+        GameMessage.PIECE_FOR_PUSH -> "밀쳐낼 대상을 선택하세요" to "대상 선택"
+        GameMessage.ZONE_FOR_OVERPRICE -> "바가지 요금을 적용할 부동산을 선택하세요" to "부동산 선택"
+        GameMessage.PIECE_FOR_GIFT_PROPERTY -> "증여할 대상을 선택하세요" to "대상 선택"
+        GameMessage.ZONE_FOR_GIFT_PROPERTY -> "증여할 부동산을 선택하세요" to "자신의 부동산 선택"
+        GameMessage.ROLL_THE_DICE_FOR_MOONWALK -> "보드를 클릭하여 문워크 주사위를 굴리세요" to "문워크 주사위"
+        GameMessage.ZONE_FOR_EARTHQUAKE -> "지진을 일으킬 부동산을 선택하세요" to "부동산 선택"
+        GameMessage.MAGIC -> "보드를 클릭하여 마법을 선택하세요" to "마법"
     }
 
     private suspend fun tax(taxDialog: GameDialogTax): Int {

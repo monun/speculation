@@ -6,48 +6,58 @@ import io.github.monun.speculation.ref.upstream
 class Board(game: Game) {
     internal val game = upstream(game)
 
+    val zoneStart = ZoneStart()
+    val zoneGamble = ZoneGamble()
+    val zoneJail = ZoneJail()
+    val zoneFestival = ZoneFestival()
+    val zonePortal = ZonePortal()
+    val zoneNTS = ZoneNTS()
+    val zoneMagicA = ZoneMagic()
+    val zoneMagicB = ZoneMagic()
+    val zoneMagicC = ZoneMagic()
+
     val zones = listOf(
-        ZoneStart(),
+        zoneStart,
         ZoneProperty(),
         ZoneProperty(),
         ZoneProperty(),
 
-        ZoneGamble(),
-        ZoneProperty(),
-        ZoneProperty(),
-        ZoneProperty(),
-
-
-        ZoneJail(),
-        ZoneProperty(),
-        ZoneProperty(),
-        ZoneProperty(),
-
-        ZoneMagic(),
+        zoneGamble,
         ZoneProperty(),
         ZoneProperty(),
         ZoneProperty(),
 
 
-        ZoneFestival(),
+        zoneJail,
         ZoneProperty(),
         ZoneProperty(),
         ZoneProperty(),
 
-        ZoneMagic(),
+        zoneMagicA,
         ZoneProperty(),
         ZoneProperty(),
         ZoneProperty(),
 
 
-        ZonePortal(),
+        zoneFestival,
         ZoneProperty(),
         ZoneProperty(),
         ZoneProperty(),
 
-        ZoneMagic(),
+        zoneMagicB,
         ZoneProperty(),
-        ZoneNTS(),
+        ZoneProperty(),
+        ZoneProperty(),
+
+
+        zonePortal,
+        ZoneProperty(),
+        ZoneProperty(),
+        ZoneProperty(),
+
+        zoneMagicC,
+        ZoneProperty(),
+        zoneNTS,
         ZoneProperty()
     ).also { list ->
         val count = list.count()

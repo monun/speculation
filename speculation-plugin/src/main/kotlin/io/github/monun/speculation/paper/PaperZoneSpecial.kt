@@ -59,6 +59,7 @@ class PaperZoneJail(override val zone: ZoneJail) : PaperZoneSpecial() {
 
 class PaperZoneMagic(override val zone: ZoneMagic) : PaperZoneSpecial() {
     override suspend fun playArriveEffect(piece: PaperPiece) {
+        piece.broadcast(this, Component.text("무작위 마법 효과"))
         location.playSound(Sound.ITEM_BOOK_PAGE_TURN, 0.1F)
     }
 }

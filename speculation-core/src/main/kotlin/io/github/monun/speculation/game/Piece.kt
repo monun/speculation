@@ -11,7 +11,6 @@ import io.github.monun.speculation.ref.upstream
 import kotlin.math.min
 
 class Piece(board: Board, val name: String, zone: Zone) : Attachable() {
-
     val board = upstream(board)
 
     var team: PieceTeam? = null
@@ -19,8 +18,12 @@ class Piece(board: Board, val name: String, zone: Zone) : Attachable() {
     val hasTurn: Boolean
         get() = board.game.currentTurn === this
 
+    var numberOfDice = 2
+
     var balance = 400
         private set
+
+    var hasAngel = false
 
     var isBankrupt = false
         private set
@@ -51,7 +54,13 @@ class Piece(board: Board, val name: String, zone: Zone) : Attachable() {
         })
     }
 
-    internal suspend fun moveTo(destination: Zone, movement: Movement, cause: MovementCause, source: Piece) {
+    internal suspend fun moveTo(
+        destination: Zone,
+        movement: Movement,
+        cause: MovementCause,
+        source: Piece,
+        onMove: (suspend (journey: Journey, zone: Zone) -> Unit)? = null
+    ) {
         val journey = Journey(this, zone, destination, movement, cause, source).apply {
             pathfinding()
         }
@@ -67,6 +76,7 @@ class Piece(board: Board, val name: String, zone: Zone) : Attachable() {
             this.zone = zone
             board.game.eventAdapter.call(PieceMoveEvent(this, journey, prev, zone))
             zone.onPass(journey)
+            onMove?.invoke(journey, zone)
             journey.pass(zone)
             prev = zone
         }
@@ -74,6 +84,7 @@ class Piece(board: Board, val name: String, zone: Zone) : Attachable() {
         zone = journey.destination
         eventAdapter.call(PieceMoveEvent(this, journey, prev, zone))
         eventAdapter.call(PieceArriveEvent(this, journey, zone))
+        onMove?.invoke(journey, zone)
         zone.onArrive(journey)
     }
 

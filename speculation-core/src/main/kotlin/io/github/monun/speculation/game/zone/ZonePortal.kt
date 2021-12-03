@@ -4,18 +4,18 @@ import io.github.monun.speculation.game.Journey
 import io.github.monun.speculation.game.Movement
 import io.github.monun.speculation.game.MovementCause
 import io.github.monun.speculation.game.Piece
-import io.github.monun.speculation.game.dialog.GameDialogPortal
+import io.github.monun.speculation.game.dialog.GameDialogTargetZone
 import io.github.monun.speculation.game.exception.TurnOverException
 import io.github.monun.speculation.game.message.GameMessage
 
-class ZonePortal: Zone() {
+class ZonePortal : Zone() {
     override suspend fun onTakeTurn(piece: Piece) {
-        val default = board.zones.filter { it != this }.random()
-        var to = piece.request(GameDialogPortal(), GameMessage.PORTAL) {
-            default
+        val zones = board.zones.filter { it != this }
+        var to = piece.request(GameDialogTargetZone(zones), GameMessage.ZONE_FOR_PORTAL) {
+            zones.random()
         }
 
-        if (to == this) to = default
+        if (to == this) to = zones.random()
         piece.moveTo(to, Movement.FORWARD, MovementCause.PORTAL, piece)
     }
 

@@ -47,6 +47,7 @@ class GameEventListener(private val process: PaperGameProcess) {
             register(PieceJailbreakEvent::class.java, ::onPieceTryEscape)
             register(PropertyAddAmplifierEvent::class.java, ::onPropertyAddAmplifier)
             register(PropertyRemoveAmplifierEvent::class.java, ::onPropertyRemoveAmplifier)
+            register(PropertyUpdateEvent::class.java, ::onPropertyUpdate)
         }
     }
 
@@ -116,6 +117,17 @@ class GameEventListener(private val process: PaperGameProcess) {
 
         withContext(Dispatchers.Heartbeat) {
             paperProperty.playUpgradeEffect(paperOwner, event.level)
+            paperProperty.updateSlots()
+            paperProperty.updateTolls()
+        }
+    }
+
+    private suspend fun onPropertyUpdate(event: PropertyUpdateEvent) {
+        val property = event.property
+
+        val paperProperty = property.attachment<PaperZoneProperty>()
+
+        withContext(Dispatchers.Heartbeat) {
             paperProperty.updateSlots()
             paperProperty.updateTolls()
         }

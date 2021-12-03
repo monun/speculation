@@ -77,19 +77,21 @@ class Game {
                         piece.zone.onTakeTurn(piece)
 
                         val diceResult = piece.request(
-                            GameDialogDice(2),
+                            GameDialogDice(piece.numberOfDice),
                             GameMessage.ROLL_THE_DICE
                         ) {
-                            List(2) {
+                            List(piece.numberOfDice) {
                                 1 + Random.nextInt(6)
                             }
                         }
+                        // 다음턴 주사위 초기화
+                        piece.numberOfDice = 2
 
                         piece.zone.onTryLeave(piece, diceResult)
-                        piece.moveTo(piece.zone.shift(diceResult.sum()), Movement.FORWARD, MovementCause.DICE, piece)
+//                        piece.moveTo(piece.zone.shift(diceResult.sum()), Movement.FORWARD, MovementCause.DICE, piece)
 
                         // ======================================= 디버그 시작 =======================================
-                        // piece.moveTo(board.zoneSpecials.last(), Movement.TELEPORT, MovementCause.DICE, piece)
+                         piece.moveTo(board.zoneMagicA, Movement.TELEPORT, MovementCause.DICE, piece)
                         // ======================================= 디버그 끝 =======================================
                     }
                     catch (bankrupt: BankruptException) {}

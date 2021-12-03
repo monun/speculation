@@ -98,8 +98,12 @@ class ZoneProperty : Zone() {
         owner?.let { owner ->
             if (owner.isFriendly(piece)) return@let
 
-            piece.transfer(tolls, owner, this)
-            piece.ensureAlive()
+            // 천사 체크
+            if (owner.hasAngel) owner.hasAngel = false
+            else {
+                piece.transfer(tolls, owner, this)
+                piece.ensureAlive()
+            }
 
             val acquisitionCosts = acquisitionCosts
 
@@ -166,6 +170,17 @@ class ZoneProperty : Zone() {
         levelBuilding.init(baseTolls + baseTolls / 2)
         levelHotel.init(baseTolls * 2)
         levelLandmark.init(baseTolls * 2 + baseTolls / 2)
+    }
+
+    suspend fun update(info: Pair<Piece, Int>? = owner?.to(level)) {
+        if (info == null) {
+            this.owner = null
+            this.level = 0
+        } else {
+            this.owner = info.first
+            this.level = info.second
+        }
+        board.game.eventAdapter.call(PropertyUpdateEvent(this))
     }
 
     inner class Level(val value: Int) {
