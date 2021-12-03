@@ -25,6 +25,7 @@ import org.bukkit.entity.Firework
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.Vector
 import java.time.Duration
+import java.util.*
 import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -143,7 +144,8 @@ class GameEventListener(private val process: PaperGameProcess) {
                         text.append(newOwner.attachment<PaperPiece>().name)
                     }.build())
                     paperProperty.location.run {
-                        val effect = FireworkEffect.builder().with(FireworkEffect.Type.BALL_LARGE).withColor(paperNewOwner.color.color).build()
+                        val effect = FireworkEffect.builder().with(FireworkEffect.Type.BALL_LARGE)
+                            .withColor(paperNewOwner.color.color).build()
                         world.playFirework(this, effect)
                     }
                 }
@@ -555,11 +557,27 @@ class GameEventListener(private val process: PaperGameProcess) {
                 delay(199L)
             }
 
-            val credits = listOf(
-                "" to ""
-            )
+            val credits = TreeMap<String, ArrayList<String>>(naturalOrder())
 
-            //TODO 크레딧 출력
+            for (zone in process.game.board.zones) {
+                val paperZone = zone.attachment<PaperZone>()
+                credits.computeIfAbsent(paperZone.author) {
+                    arrayListOf()
+                } += paperZone.name
+            }
+
+            for ((author, list) in credits.toList().shuffled()) {
+                Title.title(
+                    Component.text(author).color(NamedTextColor.AQUA),
+                    Component.text(list.joinToString(" ")).color(NamedTextColor.GRAY),
+                    Title.Times.of(
+                        Duration.ofMillis(100),
+                        Duration.ofSeconds(3),
+                        Duration.ofMillis(100)
+                    )
+                )
+                delay(3200L)
+            }
         }
     }
 }
