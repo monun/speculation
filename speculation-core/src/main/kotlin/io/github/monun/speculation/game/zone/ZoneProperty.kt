@@ -114,7 +114,7 @@ class ZoneProperty : Zone() {
                             GameMessage.ACQUISITION
                         ) { false }
                     ) {
-                        piece.transfer(tolls, owner, this)
+                        piece.transfer(acquisitionCosts, owner, this)
                         this.owner = piece
 
                         board.game.eventAdapter.call(PropertyAcquisitionEvent(this, owner, piece))

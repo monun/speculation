@@ -21,6 +21,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.Particle
 import org.bukkit.Sound
+import org.bukkit.entity.ArmorStand
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.Vector
 import java.time.Duration
@@ -48,6 +49,7 @@ class GameEventListener(private val process: PaperGameProcess) {
             register(PropertyAddAmplifierEvent::class.java, ::onPropertyAddAmplifier)
             register(PropertyRemoveAmplifierEvent::class.java, ::onPropertyRemoveAmplifier)
             register(PropertyUpdateEvent::class.java, ::onPropertyUpdate)
+            register(PieceTurnOverEvent::class.java, ::onPieceTurnOver)
         }
     }
 
@@ -199,7 +201,11 @@ class GameEventListener(private val process: PaperGameProcess) {
 
         withContext(Dispatchers.Heartbeat) {
             paperPiece.updateScore(piece.balance)
-            broadcastTransfer(paperPiece.name, Component.text("[${event.zone.attachment<PaperZone>().name}]"), event.amount)
+            broadcastTransfer(
+                paperPiece.name,
+                Component.text("[${event.zone.attachment<PaperZone>().name}]"),
+                event.amount
+            )
 
             val location = paperPiece.stand.location.apply { y += 1.0 }
 
@@ -388,6 +394,26 @@ class GameEventListener(private val process: PaperGameProcess) {
                     )
                 )
             )
+
+            paperPiece.stand.updateMetadata<ArmorStand> {
+                isGlowing = true
+                isSmall = false
+            }
+        }
+
+        delay(1500L)
+    }
+
+    private suspend fun onPieceTurnOver(event: PieceTurnOverEvent) {
+        val piece = event.piece
+
+        val paperPiece = piece.attachment<PaperPiece>()
+
+        withContext(Dispatchers.Heartbeat) {
+            paperPiece.stand.updateMetadata<ArmorStand> {
+                isGlowing = false
+                isSmall = true
+            }
         }
 
         delay(1500L)

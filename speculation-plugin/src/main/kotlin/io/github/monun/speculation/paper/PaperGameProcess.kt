@@ -124,10 +124,10 @@ class PaperGameProcess(
                 this.innerFace = innerFace
                 this.outerFace = outerFace
                 this.rotation = when (innerFace) {
-                    Face.SOUTH -> Rotation.FLIPPED
-                    Face.WEST -> Rotation.COUNTER_CLOCKWISE
-                    Face.NORTH -> Rotation.NONE
-                    Face.EAST -> Rotation.CLOCKWISE
+                    Face.SOUTH -> Rotation.NONE
+                    Face.WEST -> Rotation.CLOCKWISE
+                    Face.NORTH -> Rotation.FLIPPED
+                    Face.EAST -> Rotation.COUNTER_CLOCKWISE
                 }.let {
                     if (this.isCorner) it.rotateCounterClockwise()
                     else it
@@ -295,6 +295,7 @@ class PaperGameProcess(
                             setBasePlate(false)
                             customName(Component.text(player.name))
                             isCustomNameVisible = true
+                            isSmall = true
                         }
 
                         updateEquipment {

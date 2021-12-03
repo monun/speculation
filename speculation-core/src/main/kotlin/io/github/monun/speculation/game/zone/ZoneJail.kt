@@ -3,7 +3,7 @@ package io.github.monun.speculation.game.zone
 import io.github.monun.speculation.game.Journey
 import io.github.monun.speculation.game.Piece
 import io.github.monun.speculation.game.event.PieceJailbreakEvent
-import io.github.monun.speculation.game.exception.TurnOverException
+import io.github.monun.speculation.game.exception.PieceTurnOverException
 
 class ZoneJail : Zone() {
     companion object {
@@ -21,7 +21,7 @@ class ZoneJail : Zone() {
 
             board.game.eventAdapter.call(PieceJailbreakEvent(piece, piece.jailCount, false))
             piece.jailCount--
-            throw TurnOverException()
+            throw PieceTurnOverException()
         }
 
         board.game.eventAdapter.call(PieceJailbreakEvent(piece, 0, true))
@@ -29,7 +29,7 @@ class ZoneJail : Zone() {
 
     override suspend fun onArrive(journey: Journey) {
         journey.piece.jailCount = count
-        throw TurnOverException()
+        throw PieceTurnOverException()
     }
 
     override suspend fun onLeave(journey: Journey) {

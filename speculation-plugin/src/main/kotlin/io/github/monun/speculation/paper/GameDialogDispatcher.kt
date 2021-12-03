@@ -23,6 +23,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Sound
 import org.bukkit.util.Vector
 import java.time.Duration
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 class GameDialogDispatcher {
@@ -607,13 +608,13 @@ class GameDialogDispatcher {
                 }
             }
 
-            while (value > 0.0) {
+            while (amount > 0) {
                 delay(1L)
 
                 value -= speed
                 speed += 0.04
 
-                amount = value.roundToInt()
+                amount = max(0, value.roundToInt())
 
                 Bukkit.getServer().showTitle(
                     Title.title(
@@ -644,7 +645,7 @@ class GameDialogDispatcher {
 
             Bukkit.getServer().showTitle(
                 Title.title(
-                    Component.text("$amount").color(NamedTextColor.DARK_GREEN).decorate(TextDecoration.BOLD),
+                    Component.text(amount).color(NamedTextColor.DARK_GREEN).decorate(TextDecoration.BOLD),
                     Component.empty(),
                     Title.Times.of(
                         Duration.ofMillis(0),

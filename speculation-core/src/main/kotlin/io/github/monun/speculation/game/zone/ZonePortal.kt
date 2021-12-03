@@ -5,7 +5,7 @@ import io.github.monun.speculation.game.Movement
 import io.github.monun.speculation.game.MovementCause
 import io.github.monun.speculation.game.Piece
 import io.github.monun.speculation.game.dialog.GameDialogTargetZone
-import io.github.monun.speculation.game.exception.TurnOverException
+import io.github.monun.speculation.game.exception.PieceTurnOverException
 import io.github.monun.speculation.game.message.GameMessage
 
 class ZonePortal : Zone() {
@@ -20,6 +20,6 @@ class ZonePortal : Zone() {
     }
 
     override suspend fun onArrive(journey: Journey) {
-        throw TurnOverException()
+        throw PieceTurnOverException()
     }
 }

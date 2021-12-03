@@ -8,7 +8,7 @@ import io.github.monun.speculation.game.event.PieceTakeTurnEvent
 import io.github.monun.speculation.game.event.PieceTurnOverEvent
 import io.github.monun.speculation.game.exception.BankruptException
 import io.github.monun.speculation.game.exception.GameOverException
-import io.github.monun.speculation.game.exception.TurnOverException
+import io.github.monun.speculation.game.exception.PieceTurnOverException
 import io.github.monun.speculation.game.message.GameMessage
 import kotlinx.coroutines.*
 import java.util.*
@@ -53,14 +53,9 @@ class Game {
 
         scope.launch(dispatcher) {
             // ======================================= debug start =======================================
-//            val pieces = board.pieces.values
-//            board.zoneProperties.forEach {
-//                pieces.random().let { piece ->
-//                        it.upgrade(piece, piece, 4)
-//                }
-//            }
-//            pieces.forEach { it.withdraw(400, board.zones.first()) }
-//            pieces.forEach { it.zone = board.zones.last() }
+            // for (zoneProperty in board.zoneProperties) {
+            //     zoneProperty.upgrade(board.pieces.random(), board.pieces.random(), 4)
+            // }
             // ======================================= debug end =======================================
 
             try {
@@ -93,11 +88,10 @@ class Game {
                         // ======================================= 디버그 시작 =======================================
                         // piece.moveTo(board.zoneMagicA, Movement.TELEPORT, MovementCause.DICE, piece)
                         // ======================================= 디버그 끝 =======================================
-                    }
-                    catch (bankrupt: BankruptException) {}
-                    catch (turnOver: TurnOverException) {
-                        eventAdapter.call(PieceTurnOverEvent(piece))
-                    }
+                    } catch (bankrupt: BankruptException) {
+                        continue
+                    } catch (turnOver: PieceTurnOverException) {}
+                    eventAdapter.call(PieceTurnOverEvent(piece))
                 }
             } catch (gameOver: GameOverException) {
                 eventAdapter.call(GameOverEvent())
