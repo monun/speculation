@@ -302,6 +302,7 @@ class GameEventListener(private val process: PaperGameProcess) {
         withContext(Dispatchers.Heartbeat) {
             paperProperty.playClearEffect()
             paperProperty.updateSlots()
+            paperProperty.updateTolls()
         }
     }
 
