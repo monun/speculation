@@ -522,7 +522,20 @@ class GameEventListener(private val process: PaperGameProcess) {
     }
 
     private suspend fun onBankrupt(event: PieceBankruptEvent) {
+        val piece = event.piece
+        val paperPiece: PaperPiece = piece.attachment()
 
+        withContext(Dispatchers.Heartbeat) {
+            paperPiece.stand.location.apply { y += 1.0 }.run {
+                world.playFirework(
+                    x,
+                    y,
+                    z,
+                    FireworkEffect.builder().with(FireworkEffect.Type.BALL).withColor(paperPiece.color.color).build(),
+                )
+            }
+            paperPiece.stand.remove()
+        }
     }
 
     private suspend fun onGameOver(event: GameOverEvent) {
@@ -567,13 +580,15 @@ class GameEventListener(private val process: PaperGameProcess) {
             }
 
             for ((author, list) in credits.toList().shuffled()) {
-                Title.title(
-                    Component.text(author).color(NamedTextColor.AQUA),
-                    Component.text(list.joinToString(" ")).color(NamedTextColor.GRAY),
-                    Title.Times.of(
-                        Duration.ofMillis(100),
-                        Duration.ofSeconds(3),
-                        Duration.ofMillis(100)
+                Bukkit.getServer().showTitle(
+                    Title.title(
+                        Component.text(author).color(NamedTextColor.AQUA),
+                        Component.text(list.joinToString(" ")).color(NamedTextColor.GRAY),
+                        Title.Times.of(
+                            Duration.ofMillis(100),
+                            Duration.ofSeconds(3),
+                            Duration.ofMillis(100)
+                        )
                     )
                 )
                 delay(3200L)

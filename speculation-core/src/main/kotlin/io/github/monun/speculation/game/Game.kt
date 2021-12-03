@@ -99,6 +99,7 @@ class Game {
 
                             // ======================================= 디버그 시작 =======================================
                             // piece.moveTo(board.zoneMagicA, Movement.TELEPORT, MovementCause.DICE, piece)
+//                            eventAdapter.call(GameOverEvent(piece))
                             // ======================================= 디버그 끝 ========================================
 
                             break
