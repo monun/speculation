@@ -230,7 +230,7 @@ class PaperGameProcess(
         }
 
         specials[0].initResources(0, "출발지", "[null]")
-        specials[1].initResources(1005, "카지노", "degree2121")
+        specials[1].initResources(1005, "카지노", "piese1028")
         specials[2].initResources(1001, "감옥", "kinglee2005")
         specials[3].initResources(1006, "마법", "degree2121")
         specials[4].initResources(1002, "축제", "coroskai")
