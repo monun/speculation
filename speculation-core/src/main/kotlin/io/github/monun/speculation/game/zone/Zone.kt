@@ -9,7 +9,7 @@ abstract class Zone : Attachable() {
     lateinit var next: Zone
 
     val pieces: List<Piece>
-        get() = board.pieces.filter { !it.isBankrupt && it.zone == this }
+        get() = board.survivors.filter { it.zone == this }
 
     fun shift(movement: Movement): Zone {
         return when (movement) {

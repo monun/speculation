@@ -48,10 +48,10 @@ sealed interface Magic {
     object Push : Magic {
         override suspend fun dispatch(zone: ZoneMagic, piece: Piece) {
             val target = piece.request(
-                GameDialogTargetPiece(piece.board.pieces),
+                GameDialogTargetPiece(piece.board.survivors),
                 GameMessage.PIECE_FOR_PUSH
             ) {
-                piece.board.pieces.random()
+                piece.board.survivors.random()
             }
 
             target.runCatching {
