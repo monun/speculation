@@ -229,15 +229,15 @@ class PaperGameProcess(
             this.modelId = modelId
         }
 
-        specials[0].initResources(0, "출발지", "null")
-        specials[1].initResources(0, "카지노", "null")
-        specials[2].initResources(0, "감옥", "null")
-        specials[3].initResources(0, "이벤트", "null")
-        specials[4].initResources(0, "축제", "null")
-        specials[5].initResources(0, "이벤트", "null")
-        specials[6].initResources(0, "포탈", "null")
-        specials[7].initResources(0, "이벤트", "null")
-        specials[8].initResources(0, "국세청", "null")
+        specials[0].initResources(0, "출발지", "[null]")
+        specials[1].initResources(1005, "카지노", "degree2121")
+        specials[2].initResources(1001, "감옥", "kinglee2005")
+        specials[3].initResources(1006, "마법", "degree2121")
+        specials[4].initResources(1002, "축제", "coroskai")
+        specials[5].initResources(1007, "마법", "degree2121")
+        specials[6].initResources(1003, "포탈", "degree2121")
+        specials[7].initResources(1008, "마법", "degree2121")
+        specials[8].initResources(1004, "국세청", "piese1028")
 
         specials.forEach { special ->
             special.apply {
@@ -249,6 +249,14 @@ class PaperGameProcess(
                     invisible = true
                     rotation = rot
                     setFacingDirection(BlockFace.DOWN)
+
+                    val modelId = special.modelId
+
+                    if (modelId > 0) {
+                        setItem(ItemStack(Material.PAPER).apply {
+                            editMeta { it.setCustomModelData(modelId) }
+                        }, false)
+                    }
                 }
             }
         }
