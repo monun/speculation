@@ -132,7 +132,7 @@ class ZoneProperty : Zone() {
                     break
                 }
 
-                piece.withdraw(tolls, this)
+                piece.withdraw(costs, this)
                 upgrade(owner ?: piece, piece, level.value)
             }
         }

@@ -141,15 +141,7 @@ class GameEventListener(private val process: PaperGameProcess) {
         val paperZone = zone.attachment<PaperZone>()
 
         withContext(Dispatchers.Heartbeat) {
-            Component.text().also { text ->
-                text.append(Component.text("[${paperZone.name}]"))
-                text.append(Component.text(" -> "))
-                text.append(Component.text(amount).color(NamedTextColor.GREEN))
-                text.append(Component.text(" -> "))
-                text.append(paperPiece.name)
-            }.build().let {
-                Bukkit.broadcast(it)
-            }
+            broadcastTransfer(Component.text("[${paperZone.name}]"), paperPiece.name, event.amount)
 
             val box = paperZone.box
             val point = paperZone.box.min.toLocation(process.world).apply { y = box.maxY + 0.25 }
@@ -195,15 +187,7 @@ class GameEventListener(private val process: PaperGameProcess) {
 
         withContext(Dispatchers.Heartbeat) {
             paperPiece.updateScore(piece.balance)
-            Component.text().also { text ->
-                text.append(paperPiece.name)
-                text.append(Component.text(" -> "))
-                text.append(Component.text(event.amount).color(NamedTextColor.GREEN))
-                text.append(Component.text(" -> "))
-                text.append(Component.text("[${event.zone.attachment<PaperZone>().name}]"))
-            }.build().let {
-                Bukkit.broadcast(it)
-            }
+            broadcastTransfer(paperPiece.name, Component.text("[${event.zone.attachment<PaperZone>().name}]"), event.amount)
 
             val location = paperPiece.stand.location.apply { y += 1.0 }
 
@@ -225,6 +209,18 @@ class GameEventListener(private val process: PaperGameProcess) {
         }
     }
 
+    private fun broadcastTransfer(from: Component, to: Component, amount: Int) {
+        Component.text().also { text ->
+            text.append(from)
+            text.append(Component.text(" - ").color(NamedTextColor.RED))
+            text.append(Component.text(amount).color(NamedTextColor.DARK_GREEN))
+            text.append(Component.text(" + ").color(NamedTextColor.AQUA))
+            text.append(to)
+        }.build().let {
+            Bukkit.broadcast(it)
+        }
+    }
+
     private suspend fun onPieceTransfer(event: PieceTransferEvent) {
         val piece = event.piece
         val receiver = event.receiver
@@ -236,16 +232,7 @@ class GameEventListener(private val process: PaperGameProcess) {
 
         withContext(Dispatchers.Heartbeat) {
             paperPiece.updateScore(piece.balance)
-
-            Component.text().also { text ->
-                text.append(paperPiece.name)
-                text.append(Component.text(" -> "))
-                text.append(Component.text(event.amount).color(NamedTextColor.GREEN))
-                text.append(Component.text(" -> "))
-                text.append(paperReceiver.name)
-            }.build().let {
-                Bukkit.broadcast(it)
-            }
+            broadcastTransfer(paperPiece.name, paperReceiver.name, amount)
 
             val location = paperPiece.stand.location.apply { y += 1.0 }
             location.playSound(Sound.BLOCK_CHAIN_PLACE, 0.1F)

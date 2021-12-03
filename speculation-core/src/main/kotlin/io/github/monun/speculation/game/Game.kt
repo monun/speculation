@@ -116,7 +116,7 @@ class Game {
         val survivors = pieces.filter { !it.isBankrupt }
 
         if (survivors.isEmpty()) throw GameOverException()
-        if (survivors.count() == 1) throw GameOverException(survivors.first())
+        if (pieces.count() > 1 && survivors.count() == 1) throw GameOverException(survivors.first())
     }
 }
 
