@@ -54,8 +54,9 @@ class Game {
         scope.launch(dispatcher) {
             // ======================================= debug start =======================================
             // for (zoneProperty in board.zoneProperties) {
-            //     zoneProperty.upgrade(board.pieces.random(), board.pieces.random(), 4)
+            //     zoneProperty.upgrade(board.pieces.last(), board.pieces.last(), 4)
             // }
+            // board.pieces.forEach { it.withdraw(400, board.zoneStart) }
             // ======================================= debug end =======================================
 
             try {
@@ -91,22 +92,23 @@ class Game {
                                 piece
                             )
 
-                            // 더블 체크
+//                            ======================================= 디버그 시작 =======================================
+//                            piece.moveTo(board.zoneProperties.first(), Movement.TELEPORT, MovementCause.DICE, piece)
+//                            ======================================= 디버그 끝 ========================================
+
+                            // 주사위 더블(double) 체크
                             if (diceResult.count() > 1) {
                                 val first = diceResult.first()
                                 if (diceResult.all { it == first }) continue
                             }
-
-                            // ======================================= 디버그 시작 =======================================
-                            // piece.moveTo(board.zoneMagicA, Movement.TELEPORT, MovementCause.DICE, piece)
-//                            eventAdapter.call(GameOverEvent(piece))
-                            // ======================================= 디버그 끝 ========================================
 
                             break
                         }
                     } catch (bankrupt: BankruptException) {
                         continue
                     } catch (turnOver: PieceTurnOverException) {
+                    } finally {
+                        checkGameOver()
                     }
                     eventAdapter.call(PieceTurnOverEvent(piece))
                 }

@@ -8,6 +8,7 @@ import io.github.monun.speculation.game.dialog.GameDialogDice
 import io.github.monun.speculation.game.dialog.GameDialogMagic
 import io.github.monun.speculation.game.dialog.GameDialogTargetPiece
 import io.github.monun.speculation.game.dialog.GameDialogTargetZone
+import io.github.monun.speculation.game.exception.BankruptException
 import io.github.monun.speculation.game.message.GameMessage
 import kotlin.math.max
 import kotlin.math.pow
@@ -57,7 +58,7 @@ sealed interface Magic {
             target.runCatching {
                 moveTo(target.zone.shift(Movement.REVERSE), Movement.REVERSE, MovementCause.MAGIC, piece)
             }.onFailure { exception ->
-                if (target == piece) throw exception
+                if (piece == target || exception !is BankruptException) throw exception
             }
         }
     }
@@ -69,8 +70,8 @@ sealed interface Magic {
                 val target = piece.board.zoneJail.pieces.randomOrNull() ?: return
                 target.runCatching {
                     moveTo(property, Movement.TELEPORT, MovementCause.MAGIC, piece)
-                }.onFailure {
-                    if (target == piece) throw it
+                }.onFailure { exception ->
+                    if (piece == target || exception !is BankruptException) throw exception
                 }
             }
         }

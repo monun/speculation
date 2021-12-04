@@ -52,6 +52,7 @@ class GameEventListener(private val process: PaperGameProcess) {
             register(PropertyUpdateEvent::class.java, ::onPropertyUpdate)
             register(PieceTurnOverEvent::class.java, ::onPieceTurnOver)
             register(GameOverEvent::class.java, ::onGameOver)
+            register(PieceBankruptEvent::class.java, ::onBankrupt)
         }
     }
 
@@ -535,6 +536,7 @@ class GameEventListener(private val process: PaperGameProcess) {
                 )
             }
             paperPiece.stand.remove()
+            paperPiece.broadcast(Component.text("파산!"))
         }
     }
 

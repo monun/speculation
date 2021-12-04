@@ -56,8 +56,6 @@ class ZoneGamble : Zone() {
             for (winner in winners.keys) {
                 winner.deposit(prizePerWinner, this)
             }
-
-            board.game.checkGameOver()
         }
     }
 }
