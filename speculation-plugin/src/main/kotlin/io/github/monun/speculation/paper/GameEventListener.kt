@@ -1,7 +1,6 @@
 package io.github.monun.speculation.paper
 
 import io.github.monun.heartbeat.coroutines.Heartbeat
-import io.github.monun.heartbeat.coroutines.Suspension
 import io.github.monun.speculation.game.MovementCause
 import io.github.monun.speculation.game.event.*
 import io.github.monun.speculation.game.zone.ZoneFestival
@@ -75,9 +74,10 @@ class GameEventListener(private val process: PaperGameProcess) {
             if (journey.cause != MovementCause.DICE) ticks = ticks.shr(1)
 
             val vector = to.clone().subtract(from).toVector()
-            val sus = Suspension()
+
             for (tick in 1..ticks) {
-                sus.delay(50L)
+                delay(1L) // 1 tick
+
                 val parabolaX = tick.toDouble() / ticks
                 val parabolaY = 4.0 * parabolaX - 4.0 * parabolaX.pow(2)
 
@@ -87,6 +87,7 @@ class GameEventListener(private val process: PaperGameProcess) {
                 }
                 paperPiece.stand.moveTo(location)
             }
+
             paperPiece.playStepSound()
 
             if (zoneTo != journey.destination) {
