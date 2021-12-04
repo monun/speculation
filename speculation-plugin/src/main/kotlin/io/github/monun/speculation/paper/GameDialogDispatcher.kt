@@ -548,7 +548,7 @@ class GameDialogDispatcher {
                 for (target in targetPieceDialog.candidates) {
                     val paperPiece = target.attachment<PaperPiece>()
 
-                    button(paperPiece.stand.bukkitEntity.boundingBox) {
+                    button(paperPiece.stand.bukkitEntity.boundingBox.expand(0.5)) {
                         actionMessage { paperPiece.name }
 
                         onClick { _, _, _ ->
