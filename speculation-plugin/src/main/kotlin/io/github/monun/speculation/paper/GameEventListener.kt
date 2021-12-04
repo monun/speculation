@@ -538,6 +538,7 @@ class GameEventListener(private val process: PaperGameProcess) {
             }
             paperPiece.stand.remove()
             paperPiece.broadcast(Component.text("파산!"))
+            delay(1000L) // 후딜레이
         }
     }
 

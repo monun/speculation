@@ -93,7 +93,7 @@ class Game {
                             )
 
 //                            ======================================= 디버그 시작 =======================================
-//                            piece.moveTo(board.zoneProperties.first(), Movement.TELEPORT, MovementCause.DICE, piece)
+//                             piece.moveTo(board.zoneProperties.first(), Movement.TELEPORT, MovementCause.DICE, piece)
 //                            ======================================= 디버그 끝 ========================================
 
                             // 주사위 더블(double) 체크
