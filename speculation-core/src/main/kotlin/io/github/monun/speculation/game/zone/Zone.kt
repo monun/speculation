@@ -8,7 +8,7 @@ abstract class Zone : Attachable() {
     lateinit var previous: Zone
     lateinit var next: Zone
 
-    val pieces: List<Piece>
+    val survivors: List<Piece>
         get() = board.survivors.filter { it.zone == this }
 
     fun shift(movement: Movement): Zone {

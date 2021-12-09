@@ -67,7 +67,7 @@ sealed interface Magic {
     object Punishment : Magic {
         override suspend fun dispatch(zone: ZoneMagic, piece: Piece) {
             piece.properties.randomOrNull()?.let { property ->
-                val target = piece.board.zoneJail.pieces.randomOrNull() ?: return
+                val target = piece.board.zoneJail.survivors.filter { !it.isFriendly(piece) }.randomOrNull() ?: return
                 target.runCatching {
                     moveTo(property, Movement.TELEPORT, MovementCause.MAGIC, piece)
                 }.onFailure { exception ->
@@ -147,14 +147,14 @@ sealed interface Magic {
     object GiftProperty : Magic {
         override suspend fun dispatch(zone: ZoneMagic, piece: Piece) {
             val properties = piece.properties; if (properties.isEmpty()) return
-            val pieces = piece.board.survivors.filter { it != piece }; if (pieces.isEmpty()) return
+            val enemies = piece.board.survivors.filter { !it.isFriendly(piece) }; if (enemies.isEmpty()) return
 
             val targetProperty = piece.request(
                 GameDialogTargetZone(properties),
                 GameMessage.PIECE_FOR_GIFT_PROPERTY
             ) { properties.random() } as ZoneProperty
             val targetPiece =
-                piece.request(GameDialogTargetPiece(pieces), GameMessage.PIECE_FOR_GIFT_PROPERTY) { pieces.random() }
+                piece.request(GameDialogTargetPiece(enemies), GameMessage.PIECE_FOR_GIFT_PROPERTY) { enemies.random() }
 
             targetProperty.update(targetPiece to targetProperty.level)
         }
@@ -179,7 +179,7 @@ sealed interface Magic {
                 MovementCause.DICE,
                 piece
             ) { _, movedZone ->
-                movedZone.pieces.filter { !it.isFriendly(piece) }.forEach { enemy ->
+                movedZone.survivors.filter { !it.isFriendly(piece) }.forEach { enemy ->
                     val amount = (Random.nextDouble().pow(2) * enemy.balance).toInt()
 
                     if (amount > 0) {
