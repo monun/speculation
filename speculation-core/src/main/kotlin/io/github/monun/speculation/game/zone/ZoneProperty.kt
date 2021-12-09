@@ -99,7 +99,7 @@ class ZoneProperty : Zone() {
             if (owner.isFriendly(piece)) return@let
 
             // 천사 체크
-            if (owner.hasAngel) owner.hasAngel = false
+            if (piece.hasAngel) piece.hasAngel = false
             else {
                 piece.transfer(tolls, owner, this)
                 piece.ensureAlive()
