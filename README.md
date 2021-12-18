@@ -7,7 +7,7 @@
 
 ### 서버 열기
 
-1. 서버.zip 다운로드
+1. [server.zip](https://github.com/monun/speculation/releases/latest/download/server.zip) 다운로드
 2. 원하는 폴더에 압축 풀기
 3. 서버 실행
 
