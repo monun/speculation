@@ -1,0 +1,62 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "minecraft:item/paper"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 1000
+      },
+      "model": "item/dice/monun/dice"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 1001
+      },
+      "model": "item/jail/kinglee2005/jail"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 1002
+      },
+      "model": "item/festival/coroskai/festival"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 1003
+      },
+      "model": "item/portal/degree2121/portal"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 1004
+      },
+      "model": "item/tax/piese1028/tax"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 1005
+      },
+      "model": "item/casino/piese1028/casino"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 1006
+      },
+      "model": "item/eventcard/degree2121/event_card_water"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 1007
+      },
+      "model": "item/eventcard/degree2121/event_card_light"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 1008
+      },
+      "model": "item/eventcard/degree2121/event_card_fire"
+    }
+  ]
+}

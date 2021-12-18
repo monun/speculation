@@ -1,0 +1,12 @@
+{
+  "animation": {
+    "interpolate": false,
+        "frames": [
+            {"index": 1, "time": 100},
+			{"index": 0, "time": 1},
+			{"index": 1, "time": 2},
+			{"index": 0, "time": 1},
+			{"index": 1, "time": 1}
+		]
+	}
+}
