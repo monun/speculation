@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.targets.js.npm.includedRange
 
 plugins {
     kotlin("jvm") version "1.5.21"
@@ -40,5 +41,22 @@ subprojects {
         test {
             useJUnitPlatform()
         }
+    }
+}
+
+tasks {
+    val resourcepacksFolder = file("resourcepacks")
+    val resourcepacksTasks = resourcepacksFolder.listFiles { file -> file.isDirectory }?.map { folder ->
+        create<Zip>("resourcepacks-${folder.name}") {
+            from(folder)
+            include("*")
+            include("*/**")
+            archiveFileName.set("${folder.name}.zip")
+            destinationDirectory.set(file("build/libs/"))
+        }
+    }
+
+    create("resourcepacks") {
+        dependsOn(resourcepacksTasks)
     }
 }
