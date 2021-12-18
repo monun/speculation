@@ -10,10 +10,8 @@
 1. [server.zip](https://github.com/monun/speculation/releases/latest/download/server.zip) 다운로드
 2. 원하는 폴더에 압축 풀기
 3. 서버 실행
-
-* windows -> run-windows.bat 실행
-* linux -> ./run-linux.sh
-
+   * windows -> run-windows.bat 실행
+   * linux -> ./run-linux.sh
 4. 서버 접속
 5. 팀 선택 `/team join <team> <player>`
 6. 게임 시작 `/speculation start <world> <players> <teamMatch>`
