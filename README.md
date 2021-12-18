@@ -27,7 +27,7 @@
 * ⬜ white
 * ⬜ gray
 * 🟥 red
-* 🟥 dark_re
+* 🟥 dark_red
 * 🟨 yellow
 * 🟨 gold
 * 🟩 green
