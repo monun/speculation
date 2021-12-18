@@ -37,7 +37,9 @@ tasks {
             copy {
                 from(archiveFile)
                 val plugins = File(rootDir, ".debug/plugins/")
+                val runPlugins = File(rootDir, "run/plugins/")
                 into(if (File(plugins, archiveFileName.get()).exists()) File(plugins, "update") else plugins)
+                into(runPlugins)
             }
         }
     }

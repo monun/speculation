@@ -141,10 +141,13 @@ class GameEventListener(private val process: PaperGameProcess) {
                 event.newInfo?.let { (newOwner, _) ->
                     val paperNewOwner = newOwner.attachment<PaperPiece>()
 
-                    oldOwner.attachment<PaperPiece>().broadcast(paperProperty, Component.text().also { text ->
-                        text.append(Component.text("소유주 변경 -> "))
-                        text.append(newOwner.attachment<PaperPiece>().name)
-                    }.build())
+                    if (oldOwner != newOwner) {
+                        oldOwner.attachment<PaperPiece>().broadcast(paperProperty, Component.text().also { text ->
+                            text.append(Component.text("소유주 변경 -> "))
+                            text.append(newOwner.attachment<PaperPiece>().name)
+                        }.build())
+                    }
+
                     paperProperty.location.run {
                         val effect = FireworkEffect.builder().with(FireworkEffect.Type.BALL_LARGE)
                             .withColor(paperNewOwner.color.color).build()

@@ -11,9 +11,6 @@ import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 
-// TODO 파산 처리
-// TODO 게임 종료 처리
-
 class SpeculationPlugin : JavaPlugin() {
     var process: PaperGameProcess? = null
         private set

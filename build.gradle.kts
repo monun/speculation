@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.targets.js.npm.includedRange
-
 plugins {
     kotlin("jvm") version "1.5.21"
 }
@@ -47,7 +45,7 @@ subprojects {
 tasks {
     val resourcepacksFolder = file("resourcepacks")
     val resourcepacksTasks = resourcepacksFolder.listFiles { file -> file.isDirectory }?.map { folder ->
-        create<Zip>("resourcepacks-${folder.name}") {
+        create<Zip>("resourcepacksZip-${folder.name}") {
             from(folder)
             include("*")
             include("*/**")
@@ -56,7 +54,17 @@ tasks {
         }
     }
 
-    create("resourcepacks") {
+    create("resourcepacksZip") {
         dependsOn(resourcepacksTasks)
     }
+
+    create<Zip>("runZip") {
+        from(file("run"))
+        include("*")
+        include("*/**")
+        archiveFileName.set("server.zip")
+        destinationDirectory.set(file("build/libs/"))
+    }
+
+
 }
