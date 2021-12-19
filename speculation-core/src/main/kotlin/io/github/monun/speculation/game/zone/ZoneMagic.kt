@@ -129,6 +129,13 @@ sealed interface Magic {
         }
     }
 
+    // 퀸튜플: 다음 턴 주사위는 5개를 던짐
+    object QuintupleDice : Magic {
+        override suspend fun dispatch(zone: ZoneMagic, piece: Piece) {
+            piece.numberOfDice = 5
+        }
+    }
+
     // 서울구경: 서울로 즉시 이동
     object MoveToSeoul : Magic {
         override suspend fun dispatch(zone: ZoneMagic, piece: Piece) {
@@ -215,6 +222,45 @@ sealed interface Magic {
     object Angel : Magic {
         override suspend fun dispatch(zone: ZoneMagic, piece: Piece) {
             piece.hasAngel = true
+        }
+    }
+
+    // 부동산 압수: 지정한 땅의 소유자를 없앰
+    object Seizure : Magic {
+        override suspend fun dispatch(zone: ZoneMagic, piece: Piece) {
+            val properties = piece.board.zoneProperties.filter {
+                val owner = it.owner
+                owner != null && owner != piece
+            }
+            if (properties.isEmpty()) return
+
+            piece.request(GameDialogTargetZone(properties), GameMessage.ZONE_FOR_SEIZURE) {
+                properties.random()
+            }.let {
+                val property = (it as ZoneProperty)
+                property.clear()
+            }
+        }
+    }
+
+    // 모범시민: 국세청으로 이동
+    object ForcedTaxes : Magic {
+        override suspend fun dispatch(zone: ZoneMagic, piece: Piece) {
+            piece.moveTo(piece.board.zoneNTS, Movement.FORWARD, MovementCause.MAGIC, piece)
+        }
+    }
+
+    // 인플레이션: 소유자가 있는 모든 지역의 통행료 2배로 올림
+    object Inflation : Magic {
+        override suspend fun dispatch(zone: ZoneMagic, piece: Piece) {
+            val properties = piece.board.zoneProperties.filter {
+                it.owner != null
+            }
+            if (properties.isEmpty()) return
+
+            properties.forEach {
+                 it.addAmplifier(this, 2.0, piece)
+            }
         }
     }
 }

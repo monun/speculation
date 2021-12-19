@@ -15,6 +15,7 @@ enum class GameMessage {
     ZONE_FOR_GIFT_PROPERTY,
     ROLL_THE_DICE_FOR_MOONWALK,
     ZONE_FOR_EARTHQUAKE,
+    ZONE_FOR_SEIZURE,
     MAGIC,
 
 }

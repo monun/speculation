@@ -434,7 +434,9 @@ class GameDialogDispatcher {
                     Magic.Angel -> "천사" to "통행료 1회 면제"
                     Magic.Arrest -> "긴급체포" to "즉시 감옥으로 이동"
                     Magic.Earthquake -> "지진" to "지정한 부동산 등급 하락"
+                    Magic.ForcedTaxes -> "모범시민" to "국세청으로 이동"
                     Magic.GiftProperty -> "마음의 선물" to "자신의 부동산 하나 증여"
+                    Magic.Inflation -> "인플레이션" to "소유자가 있는 모든 부동산 통행료 x2"
                     Magic.Moonwalk -> "문워크" to "주사위를 던져 뒤로 이동"
                     Magic.MoveToSeoul -> "서울구경" to "서울로 즉시 이동"
                     Magic.MoveToStart -> "초심찾기" to "시작지점으로 이동"
@@ -443,6 +445,8 @@ class GameDialogDispatcher {
                     Magic.Punishment -> "천벌" to "감옥에 있는 대상을 자신의 부동산으로 소환"
                     Magic.Push -> "밀치기" to "지정한 대상을 뒤로 한칸 이동"
                     Magic.QuadrupleDice -> "쿼드러플 주사위" to "다음 주사위는 4개"
+                    Magic.QuintupleDice -> "퀸튜플 주사위" to "다음 주사위는 5개"
+                    Magic.Seizure -> "부동산 압수" to "지정한 부동산 소유자 없앰"
                     Magic.SingleDice -> "싱글 주사위" to "다음 주사위는 1개"
                     Magic.Storm -> "폭풍우" to "무작위 땅으로 즉시 이동"
                     Magic.TripleDice -> "트리플 주사위" to "다음 주사위는 3개"
@@ -581,6 +585,7 @@ class GameDialogDispatcher {
         GameMessage.ZONE_FOR_GIFT_PROPERTY -> "증여할 부동산을 선택하세요" to "자신의 부동산 선택"
         GameMessage.ROLL_THE_DICE_FOR_MOONWALK -> "보드를 클릭하여 문워크 주사위를 굴리세요" to "문워크 주사위"
         GameMessage.ZONE_FOR_EARTHQUAKE -> "지진을 일으킬 부동산을 선택하세요" to "부동산 선택"
+        GameMessage.ZONE_FOR_SEIZURE -> "압수할 부동산을 선택하세요" to "부동산 선택"
         GameMessage.MAGIC -> "보드를 클릭하여 마법을 선택하세요" to "마법"
     }
 
