@@ -1,7 +1,7 @@
 {
 	"credit": "Made with Blockbench",
 	"textures": {
-		"donghae": "item/dongae/zlfn/__landmark",
+		"donghae": "item/donghae/zlfn/__landmark",
 		"color": "block/red_concrete",
 		"slack": "block/spruce_log",
 		"rail": "block/white_concrete_powder",
