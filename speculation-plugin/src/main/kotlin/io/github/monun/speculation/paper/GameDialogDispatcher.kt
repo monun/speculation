@@ -446,6 +446,7 @@ class GameDialogDispatcher {
                     Magic.SingleDice -> "싱글 주사위" to "다음 주사위는 1개"
                     Magic.Storm -> "폭풍우" to "무작위 땅으로 즉시 이동"
                     Magic.TripleDice -> "트리플 주사위" to "다음 주사위는 3개"
+                    Magic.Chase -> "추격" to "지정한 대상 위치로 이동"
                 }
             }
             var currentMagic: Magic = magics.random()
@@ -582,6 +583,7 @@ class GameDialogDispatcher {
         GameMessage.ROLL_THE_DICE_FOR_MOONWALK -> "보드를 클릭하여 문워크 주사위를 굴리세요" to "문워크 주사위"
         GameMessage.ZONE_FOR_EARTHQUAKE -> "지진을 일으킬 부동산을 선택하세요" to "부동산 선택"
         GameMessage.MAGIC -> "보드를 클릭하여 마법을 선택하세요" to "마법"
+        GameMessage.PIECE_FOR_CHASE -> "이동할 위치의 대상을 선택해주세요" to "마법"
     }
 
     private suspend fun tax(taxDialog: GameDialogTax): Int {

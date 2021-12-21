@@ -16,5 +16,6 @@ enum class GameMessage {
     ROLL_THE_DICE_FOR_MOONWALK,
     ZONE_FOR_EARTHQUAKE,
     MAGIC,
+    PIECE_FOR_CHASE,
 
 }
