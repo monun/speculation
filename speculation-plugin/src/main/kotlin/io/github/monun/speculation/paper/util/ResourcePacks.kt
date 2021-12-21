@@ -4,6 +4,6 @@ import org.bukkit.entity.Player
 
 fun Player.setSpeculationResourcePack() = setResourcePack(
     "https://github.com/monun/speculation/releases/latest/download/resourcepack.zip",
-    "4158E81FCBAE63C808874E693072B7C7AAA9B48A",
+    "C6F90F0873E29E3577E01002154ACE4AE0E65542",
     true
 )
