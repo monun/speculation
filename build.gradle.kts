@@ -1,3 +1,5 @@
+import java.security.MessageDigest
+
 plugins {
     kotlin("jvm") version "1.5.21"
 }
@@ -42,6 +44,8 @@ subprojects {
     }
 }
 
+
+
 tasks {
     val resourcepacksFolder = file("resourcepacks")
     val resourcepacksTasks = resourcepacksFolder.listFiles { file -> file.isDirectory }?.map { folder ->
@@ -51,6 +55,14 @@ tasks {
             include("*/**")
             archiveFileName.set("${folder.name}.zip")
             destinationDirectory.set(file("build/libs/"))
+
+            doLast {
+                val file = archiveFile.get().asFile
+                val bytes = MessageDigest.getInstance("SHA-1").digest(file.readBytes())
+                val string = bytes.joinToString("") { "%02X".format(it) }
+
+                println(string)
+            }
         }
     }
 

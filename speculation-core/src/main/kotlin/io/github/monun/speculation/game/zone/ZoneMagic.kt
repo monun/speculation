@@ -263,4 +263,18 @@ sealed interface Magic {
             }
         }
     }
+    
+    // 추격: 지정한 말의 위치로 즉시이동
+    object Chase : Magic {
+        override suspend fun dispatch(zone: ZoneMagic, piece: Piece) {
+            val survivors = piece.board.survivors.filter { it != piece }
+            if (survivors.isEmpty()) return
+
+            piece.request(GameDialogTargetPiece(survivors), GameMessage.PIECE_FOR_CHASE) {
+                survivors.random()
+            }.let { target ->
+                piece.moveTo(target.zone, Movement.TELEPORT, MovementCause.MAGIC, piece)
+            }
+        }
+    }
 }

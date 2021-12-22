@@ -17,5 +17,6 @@ enum class GameMessage {
     ZONE_FOR_EARTHQUAKE,
     ZONE_FOR_SEIZURE,
     MAGIC,
+    PIECE_FOR_CHASE,
 
 }
