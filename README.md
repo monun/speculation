@@ -18,6 +18,9 @@
     * 예) 개인매치 - `/speculation start world @a false`
     * 예) 그룹매치 - `/speculation start world @a true`
 
+- 선택) 리소스팩 - `/speculation resourcepack`
+  - 로컬에서 리소스팩을 미리 적용 시키지 않았다면 서버 접속 이전에 "서버 리소스팩" 설정을 허용으로 변경하시는 것을 권장합니다.
+
 --- 
 
 #### 지원하는 팀 색상 [사각형은 그룹매치 색상]

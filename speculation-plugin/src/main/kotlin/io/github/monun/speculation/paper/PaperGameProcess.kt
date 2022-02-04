@@ -81,15 +81,19 @@ class PaperGameProcess(
 
         state = 2
 
-        Bukkit.getOnlinePlayers().forEach {
-            it.setSpeculationResourcePack()
-        }
-
         scope.launch {
             Bukkit.broadcast(Component.text("리소스팩 적용중..."))
-            delay(5000L)
+            delay(15000L)
 
             game.launch(scope)
+        }
+
+        Bukkit.getOnlinePlayers().forEach {
+            if (!it.hasResourcePack()) {
+                it.sendMessage(Component.text("게임 리소스팩을 부여합니다. 화면에 표시된 \"예\" 버튼을 눌러주세요."))
+                it.sendMessage(Component.text("리소스팩 적용 화면이 표시되지 않았을 시에 서버 리소스팩 여부를 \"사용\" 혹은 \"물어보기\"로 설정해주세요."))
+                it.setSpeculationResourcePack()
+            }
         }
     }
 
